@@ -339,10 +339,11 @@ class Chess:
         ACN_arr = ACN.split(" ")
 
         return {
-            "p": ACN_arr[0],
-            "s": ACN_arr[1],
-            "d": ACN_arr[2],
-            "x": True if len(ACN_arr) > 3 else False
+            "player": ACN_arr[0], # player who moved (W/B)
+            "piece": ACN_arr[1], # piece type
+            "src": ACN_arr[2], # source coordinate
+            "dest": ACN_arr[3], # destination coordinate
+            "takes": True if len(ACN_arr) > 4 else False # true if takes, false if moves
         }
 
     @staticmethod
