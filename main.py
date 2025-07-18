@@ -4,73 +4,262 @@ db = {
     "positions": {
         "a1":  {
             "own": "W",
-            "reside": "r1"
+            "reside": "r"
         },
-        "b1":  "kn1",
-        "c1":  "b1",
-        "d1":  "q",
-        "e1":  "k",
-        "f1":  "b2",
-        "g1":  "kn2",
-        "h1":  "r2",
-        "a2":  "p1",
-        "b2":  "p2",
-        "c2":  "p3",
-        "d2":  "p4",
-        "e2":  "p5",
-        "f2":  "p6",
-        "g2":  "p7",
-        "h2":  "p8",
-        "a3":  None,
-        "b3":  None,
-        "c3":  None,
-        "d3":  None,
-        "e3":  None,
-        "f3":  None,
-        "g3":  None,
-        "h3":  None,
-        "a4":  None,
-        "b4":  None,
-        "c4":  None,
-        "d4":  None,
-        "e4":  None,
-        "f4":  None,
-        "g4":  None,
-        "h4":  None,
-        "a5":  None,
-        "b5":  None,
-        "c5":  None,
-        "d5":  None,
-        "e5":  None,
-        "f5":  None,
-        "g5":  None,
-        "h5":  None,
-        "a6":  None,
-        "b6":  None,
-        "c6":  None,
-        "d6":  None,
-        "e6":  None,
-        "f6":  None,
-        "g6":  None,
-        "h6":  None,
-        "a7":  "p1",
-        "b7":  "p2",
-        "c7":  "p3",
-        "d7":  "p4",
-        "e7":  "p5",
-        "f7":  "p6",
-        "g7":  "p7",
-        "h7":  "p8",
-        "a8":  "r1",
-        "b8":  "kn1",
-        "c8":  "b1",
-        "d8":  "q",
-        "e8":  "k",
-        "f8":  "b2",
-        "g8":  "kn2",
-        "h8":  "r2"
+        "b1":  {
+            "own": "W",
+            "reside": "kn"
+        },
+        "c1":  {
+            "own": "W",
+            "reside": "b"
+        },
+        "d1":  {
+            "own": "W",
+            "reside": "q"
+        },
+        "e1":  {
+            "own": "W",
+            "reside": "k"
+        },
+        "f1":  {
+            "own": "W",
+            "reside": "b"
+        },
+        "g1":  {
+            "own": "W",
+            "reside": "kn"
+        },
+        "h1":  {
+            "own": "W",
+            "reside": "r"
+        },
+        "a2":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "b2":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "c2":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "d2":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "e2":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "f2":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "g2":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "h2":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "a3":  {
+            "own": None,
+            "reside": None
+        },
+        "b3":  {
+            "own": None,
+            "reside": None
+        },
+        "c3":  {
+            "own": None,
+            "reside": None
+        },
+        "d3":  {
+            "own": None,
+            "reside": None
+        },
+        "e3":  {
+            "own": None,
+            "reside": None
+        },
+        "f3":  {
+            "own": None,
+            "reside": None
+        },
+        "g3":  {
+            "own": None,
+            "reside": None
+        },
+        "h3":  {
+            "own": None,
+            "reside": None
+        },
+        "a4":  {
+            "own": None,
+            "reside": None
+        },
+        "b4":  {
+            "own": None,
+            "reside": None
+        },
+        "c4":  {
+            "own": None,
+            "reside": None
+        },
+        "d4":  {
+            "own": None,
+            "reside": None
+        },
+        "e4":  {
+            "own": None,
+            "reside": None
+        },
+        "f4":  {
+            "own": None,
+            "reside": None
+        },
+        "g4":  {
+            "own": None,
+            "reside": None
+        },
+        "h4":  {
+            "own": None,
+            "reside": None
+        },
+        "a5":  {
+            "own": None,
+            "reside": None
+        },
+        "b5":  {
+            "own": None,
+            "reside": None
+        },
+        "c5":  {
+            "own": None,
+            "reside": None
+        },
+        "d5":  {
+            "own": None,
+            "reside": None
+        },
+        "e5":  {
+            "own": None,
+            "reside": None
+        },
+        "f5":  {
+            "own": None,
+            "reside": None
+        },
+        "g5":  {
+            "own": None,
+            "reside": None
+        },
+        "h5":  {
+            "own": None,
+            "reside": None
+        },
+        "a6":  {
+            "own": None,
+            "reside": None
+        },
+        "b6":  {
+            "own": None,
+            "reside": None
+        },
+        "c6":  {
+            "own": None,
+            "reside": None
+        },
+        "d6":  {
+            "own": None,
+            "reside": None
+        },
+        "e6":  {
+            "own": None,
+            "reside": None
+        },
+        "f6":  {
+            "own": None,
+            "reside": None
+        },
+        "g6":  {
+            "own": None,
+            "reside": None
+        },
+        "h6":  {
+            "own": None,
+            "reside": None
+        },
+        "a7":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "b7":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "c7":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "d7":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "e7":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "f7":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "g7":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "h7":  {
+            "own": "W",
+            "reside": "p"
+        },
+        "a8":  {
+            "own": "W",
+            "reside": "r"
+        },
+        "b8":  {
+            "own": "W",
+            "reside": "kn"
+        },
+        "c8":  {
+            "own": "W",
+            "reside": "b"
+        },
+        "d8":  {
+            "own": "W",
+            "reside": "q"
+        },
+        "e8":  {
+            "own": "W",
+            "reside": "k"
+        },
+        "f8":  {
+            "own": "W",
+            "reside": "b"
+        },
+        "g8":  {
+            "own": "W",
+            "reside": "kn"
+        },
+        "h8":  {
+            "own": "W",
+            "reside": "r"
+        }
     }
-    
+
 
 }
 
