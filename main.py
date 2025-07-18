@@ -195,67 +195,67 @@ db = {
             "reside": None
         },
         "a7":  {
-            "own": "W",
+            "own": "B",
             "reside": "p"
         },
         "b7":  {
-            "own": "W",
+            "own": "B",
             "reside": "p"
         },
         "c7":  {
-            "own": "W",
+            "own": "B",
             "reside": "p"
         },
         "d7":  {
-            "own": "W",
+            "own": "B",
             "reside": "p"
         },
         "e7":  {
-            "own": "W",
+            "own": "B",
             "reside": "p"
         },
         "f7":  {
-            "own": "W",
+            "own": "B",
             "reside": "p"
         },
         "g7":  {
-            "own": "W",
+            "own": "B",
             "reside": "p"
         },
         "h7":  {
-            "own": "W",
+            "own": "B",
             "reside": "p"
         },
         "a8":  {
-            "own": "W",
+            "own": "B",
             "reside": "r"
         },
         "b8":  {
-            "own": "W",
+            "own": "B",
             "reside": "kn"
         },
         "c8":  {
-            "own": "W",
+            "own": "B",
             "reside": "b"
         },
         "d8":  {
-            "own": "W",
+            "own": "B",
             "reside": "q"
         },
         "e8":  {
-            "own": "W",
+            "own": "B",
             "reside": "k"
         },
         "f8":  {
-            "own": "W",
+            "own": "B",
             "reside": "b"
         },
         "g8":  {
-            "own": "W",
+            "own": "B",
             "reside": "kn"
         },
         "h8":  {
-            "own": "W",
+            "own": "B",
             "reside": "r"
         }
     }
