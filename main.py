@@ -118,4 +118,67 @@ class Chess:
         
         return f"{chr(file + ord('a') - 1)}{rank}"
 
+    @staticmethod
+    def destructure_ACN(ACN):
+        """
+        Helps destructuring the acn for further calculation
+
+        Args:
+            ACN / algebric chess notation (str): 
+                 - "W/B p/r/Kn/b/k/q d2 d4 x/m"
+                -- W/B => white or black moved
+                -- pieces:
+                    1. p - pawn
+                    2. r - rook
+                    3. Kn - knight
+                    4. b - bishop
+                    5. k - king
+                    6. q - queen
+                -- source
+                -- destination
+                -- takes (x) or moves (m)
+
+        Returns:
+            dict: {
+                player: "" ,
+                src: "",
+                dest: "",
+                tm: "x or m"
+            }
+        
+        """
+        ACN_arr = ACN.split(" ")
+
+        return {
+            "p": ACN_arr[0],
+            "s": ACN_arr[1],
+            "d": ACN_arr[2],
+            "x": True if len(ACN_arr) > 3 else False
+        }
+
+    @staticmethod
+    def legal_move(ACN):
+        """
+        Check if a move from src to dest is legal on a chessboard (basic bounds check).
+        
+        Args:
+            src (str): src coordinate (e.g., 'a1').
+            dest (str): dest coordinate (e.g., 'h8').
+        
+        Returns:
+            bool: True if both coordinates are valid, False otherwise.
+        """
+        
+        data = Chess.destructure_ACN(ACN)
+
+        def rook_check(data): 
+            p = data["p"]
+            s = data["s"]
+            d = data["d"]
+            x = data["x"]
+
+
+            src_coords = Chess.chess_to_graph_coords(s)
+            dest_coords = Chess.chess_to_graph_coords(d)
+
             
