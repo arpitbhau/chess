@@ -1,0 +1,260 @@
+{
+    "positions": {
+        "a1":  {
+            "player": "W",
+            "piece": "r"
+        },
+        "b1":  {
+            "player": "W",
+            "piece": "n"
+        },
+        "c1":  {
+            "player": "W",
+            "piece": "b"
+        },
+        "d1":  {
+            "player": "W",
+            "piece": "q"
+        },
+        "e1":  {
+            "player": "W",
+            "piece": "k"
+        },
+        "f1":  {
+            "player": "W",
+            "piece": "b"
+        },
+        "g1":  {
+            "player": "W",
+            "piece": "n"
+        },
+        "h1":  {
+            "player": "W",
+            "piece": "r"
+        },
+        "a2":  {
+            "player": "W",
+            "piece": "p"
+        },
+        "b2":  {
+            "player": "W",
+            "piece": "p"
+        },
+        "c2":  {
+            "player": "W",
+            "piece": "p"
+        },
+        "d2":  {
+            "player": "W",
+            "piece": "p"
+        },
+        "e2":  {
+            "player": "W",
+            "piece": "p"
+        },
+        "f2":  {
+            "player": "W",
+            "piece": "p"
+        },
+        "g2":  {
+            "player": "W",
+            "piece": "p"
+        },
+        "h2":  {
+            "player": "W",
+            "piece": "p"
+        },
+        "a3":  {
+            "player": null,
+            "piece": null
+        },
+        "b3":  {
+            "player": null,
+            "piece": null
+        },
+        "c3":  {
+            "player": null,
+            "piece": null
+        },
+        "d3":  {
+            "player": null,
+            "piece": null
+        },
+        "e3":  {
+            "player": null,
+            "piece": null
+        },
+        "f3":  {
+            "player": null,
+            "piece": null
+        },
+        "g3":  {
+            "player": null,
+            "piece": null
+        },
+        "h3":  {
+            "player": null,
+            "piece": null
+        },
+        "a4":  {
+            "player": null,
+            "piece": null
+        },
+        "b4":  {
+            "player": null,
+            "piece": null
+        },
+        "c4":  {
+            "player": null,
+            "piece": null
+        },
+        "d4":  {
+            "player": null,
+            "piece": null
+        },
+        "e4":  {
+            "player": null,
+            "piece": null
+        },
+        "f4":  {
+            "player": null,
+            "piece": null
+        },
+        "g4":  {
+            "player": null,
+            "piece": null
+        },
+        "h4":  {
+            "player": null,
+            "piece": null
+        },
+        "a5":  {
+            "player": null,
+            "piece": null
+        },
+        "b5":  {
+            "player": null,
+            "piece": null
+        },
+        "c5":  {
+            "player": null,
+            "piece": null
+        },
+        "d5":  {
+            "player": null,
+            "piece": null
+        },
+        "e5":  {
+            "player": null,
+            "piece": null
+        },
+        "f5":  {
+            "player": null,
+            "piece": null
+        },
+        "g5":  {
+            "player": null,
+            "piece": null
+        },
+        "h5":  {
+            "player": null,
+            "piece": null
+        },
+        "a6":  {
+            "player": null,
+            "piece": null
+        },
+        "b6":  {
+            "player": null,
+            "piece": null
+        },
+        "c6":  {
+            "player": null,
+            "piece": null
+        },
+        "d6":  {
+            "player": null,
+            "piece": null
+        },
+        "e6":  {
+            "player": null,
+            "piece": null
+        },
+        "f6":  {
+            "player": null,
+            "piece": null
+        },
+        "g6":  {
+            "player": null,
+            "piece": null
+        },
+        "h6":  {
+            "player": null,
+            "piece": null
+        },
+        "a7":  {
+            "player": "B",
+            "piece": "p"
+        },
+        "b7":  {
+            "player": "B",
+            "piece": "p"
+        },
+        "c7":  {
+            "player": "B",
+            "piece": "p"
+        },
+        "d7":  {
+            "player": "B",
+            "piece": "p"
+        },
+        "e7":  {
+            "player": "B",
+            "piece": "p"
+        },
+        "f7":  {
+            "player": "B",
+            "piece": "p"
+        },
+        "g7":  {
+            "player": "B",
+            "piece": "p"
+        },
+        "h7":  {
+            "player": "B",
+            "piece": "p"
+        },
+        "a8":  {
+            "player": "B",
+            "piece": "r"
+        },
+        "b8":  {
+            "player": "B",
+            "piece": "n"
+        },
+        "c8":  {
+            "player": "B",
+            "piece": "b"
+        },
+        "d8":  {
+            "player": "B",
+            "piece": "q"
+        },
+        "e8":  {
+            "player": "B",
+            "piece": "k"
+        },
+        "f8":  {
+            "player": "B",
+            "piece": "b"
+        },
+        "g8":  {
+            "player": "B",
+            "piece": "n"
+        },
+        "h8":  {
+            "player": "B",
+            "piece": "r"
+        }
+    }
+}
