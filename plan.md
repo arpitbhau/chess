@@ -42,3 +42,6 @@ working:
         -- for a perfect digonal and vertices we will run for loop for every point upto 8 and if the x and y coords are not a irrational number then the diagonal for seeking is right
 
 
+v1:
+
+make a two player game.
