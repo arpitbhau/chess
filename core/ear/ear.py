@@ -43,7 +43,7 @@ async def handle_client(reader, writer):
 
 
 async def main():
-    server = await asyncio.start_server(handle_client, "0.0.0.0", 65432)
+    server = await asyncio.start_server(handle_client, "0.0.0.0", 4444)
     print("🏁 Asyncio seed server running on port 65432")
 
     async with server:
