@@ -122,12 +122,25 @@ def pull_possible_moves(player , piece , src):
             else:
                 coords.remove(pt) # remove that coord so that reecursion goes smoothly
                 
+        def finialize(coords):
+            shifts = [
+                (( 1,  0), "+x"),
+                ((-1,  0), "-x"),
+                (( 0,  1), "+y"),
+                (( 0, -1), "-y"),
+            ]
 
-        moves = list(set(eval(filter_paths(coords=shiftedCoords , pt=[src[0] + 1 , src[1]] , direction="+x"))) | set(moves)) # union of +x and moves
-        moves = list(set(eval(filter_paths(coords=shiftedCoords , pt=[src[0] - 1 , src[1]] , direction="-x"))) | set(moves)) # union of -x and moves
-        moves = list(set(eval(filter_paths(coords=shiftedCoords , pt=[src[0] , src[1] + 1] , direction="+y"))) | set(moves)) # union of +y and moves
-        moves = list(set(eval(filter_paths(coords=shiftedCoords , pt=[src[0] , src[1] - 1] , direction="-y"))) | set(moves)) # union of -y and moves
+            all_moves = set()
 
+            for (dx, dy), d_str in shifts:
+                new_pt = [src[0] + dx, src[1] + dy]
+                new_direction = d_str
+                result = filter_paths(coords, new_pt, new_direction)
+                all_moves |= set(result)
+
+            return list(all_moves)
+        moves = finialize(shiftedCoords)
+    
     return moves
 
 # moving a piece 
