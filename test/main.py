@@ -64,7 +64,7 @@ def pull_board_square(sq):
         "piece": (board[t[0]][t[1]])[-1] ,
     }
 
-# pull up the possible moves of a piece
+# pull up the possible moves of a piecei , src[1]
 def pull_possible_moves(player , piece , src):
     """
         how the heck this works?
@@ -89,7 +89,44 @@ def pull_possible_moves(player , piece , src):
             if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= -8 and y + src[1] >= -8) # -8<=x,y<=8
         ] # coords on board imagining there are no peices except the piece(in this case the rooooookkkkk).
         
-        def 
+        def filter_paths(coords , pt , direction):
+            """coords: the list of coordinates to cycle
+            pt: the refrence pt [x , y]
+            coord:  the one coordinate which iterates in pt param."""
+            # use path eqns for sorting. ** in this case x=a and y=b
+            # for i in range(src[0] + t , 9): # (i , src[1]) --> coord to loop +x
+            if not (pt[0] <= 8 and pt[0] >= -8 and pt[1] <= 8 and pt[1] >= -8 ):
+                return ""
+            elif pt in coords:
+                d = pull_board_square(pt).get("player")
+                if d == player:
+                    moves.append(pt)
+                    return ""
+                elif d ==  (not player):
+                    return ""
+                else:
+                    coords.remove(pt)
+                    new_pt = None
+                    # new pt logic
+                    match direction:
+                        case "+x":
+                            new_pt = [pt[0] + 1 , pt[1]]
+                        case "-x":
+                            new_pt = [pt[0] - 1 , pt[1]]
+                        case "+y":
+                            new_pt = [pt[0] , pt[1] + 1]
+                        case "-y":
+                            new_pt = [pt[0] , pt[1] - 1]
+                        
+                    return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
+            else:
+                coords.remove(pt) # remove that coord so that reecursion goes smoothly
+                
+
+        moves = list(set(eval(filter_paths(coords=shiftedCoords , pt=[src[0] + 1 , src[1]] , direction="+x"))) | set(moves)) # union of +x and moves
+        moves = list(set(eval(filter_paths(coords=shiftedCoords , pt=[src[0] - 1 , src[1]] , direction="-x"))) | set(moves)) # union of -x and moves
+        moves = list(set(eval(filter_paths(coords=shiftedCoords , pt=[src[0] , src[1] + 1] , direction="+y"))) | set(moves)) # union of +y and moves
+        moves = list(set(eval(filter_paths(coords=shiftedCoords , pt=[src[0] , src[1] - 1] , direction="-y"))) | set(moves)) # union of -y and moves
 
     return moves
 
