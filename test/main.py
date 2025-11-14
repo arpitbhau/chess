@@ -10,7 +10,7 @@ board = [ ["w/r" , "w/n" , "w/b" , "w/q" , "w/k" , "w/b" , "w/n" , "w/r"] ,
           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
           ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
-          ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] ,
+          ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
 ]
 
 # convert ACN to coords and vise versa
@@ -64,7 +64,7 @@ def pull_board_square(sq):
         "piece": (board[t[0]][t[1]])[-1] ,
     }
 
-# pull up the possible moves of a piecei , src[1]
+# pull up the possible moves of a piece, src[1]
 def pull_possible_moves(player , piece , src):
     """
         how the heck this works?
@@ -86,7 +86,7 @@ def pull_possible_moves(player , piece , src):
         shiftedCoords = [
             [x + src[0], y + src[1]]
             for x, y in oCoords
-            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= -8 and y + src[1] >= -8) # -8<=x,y<=8
+            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
         ] # coords on board imagining there are no peices except the piece(in this case the rooooookkkkk).
         
         def filter_paths(coords , pt , direction):
@@ -95,15 +95,16 @@ def pull_possible_moves(player , piece , src):
             coord:  the one coordinate which iterates in pt param."""
             # use path eqns for sorting. ** in this case x=a and y=b
             # for i in range(src[0] + t , 9): # (i , src[1]) --> coord to loop +x
-            if not (pt[0] <= 8 and pt[0] >= -8 and pt[1] <= 8 and pt[1] >= -8 ):
+            if not (pt[0] <= 8 and pt[0] >= 1 and pt[1] <= 8 and pt[1] >= 1 ):
+                coords.remove(pt)
                 return ""
             elif pt in coords:
                 d = pull_board_square(pt).get("player")
                 if d == player:
-                    moves.append(pt)
                     return ""
                 elif d ==  (not player):
-                    return ""
+                    # moves.append(pt)
+                    return f"{pt}"
                 else:
                     coords.remove(pt)
                     new_pt = None
@@ -121,7 +122,7 @@ def pull_possible_moves(player , piece , src):
                     return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
             else:
                 coords.remove(pt) # remove that coord so that reecursion goes smoothly
-                
+
         def finialize(coords):
             shifts = [
                 (( 1,  0), "+x"),
@@ -135,11 +136,11 @@ def pull_possible_moves(player , piece , src):
             for (dx, dy), d_str in shifts:
                 new_pt = [src[0] + dx, src[1] + dy]
                 new_direction = d_str
-                result = filter_paths(coords, new_pt, new_direction)
+                result = eval(filter_paths(coords, new_pt, new_direction))
                 all_moves |= set(result)
 
             return list(all_moves)
-        moves = finialize(shiftedCoords)
+        return finialize(shiftedCoords)
     
     return moves
 
