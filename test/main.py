@@ -96,7 +96,6 @@ def pull_possible_moves(player , piece , src):
             # use path eqns for sorting. ** in this case x=a and y=b
             # for i in range(src[0] + t , 9): # (i , src[1]) --> coord to loop +x
             if not (pt[0] <= 8 and pt[0] >= 1 and pt[1] <= 8 and pt[1] >= 1 ):
-                coords.remove(pt)
                 return ""
             elif pt in coords:
                 d = pull_board_square(pt).get("player")
