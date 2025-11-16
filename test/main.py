@@ -141,6 +141,71 @@ def pull_possible_moves(player , piece , src):
             return list(all_moves)
         return finialize(shiftedCoords)
     
+    def bishop_moves(player: bool):
+        # acc to origin
+        oCoords = [ [1, 1] , [2,2] , [3 , 3] , [4,4] , [5,5] , [6,6] , [7,7] , # up right
+                    [1,-1] , [2,-2] , [3,-3] , [4,-4] , [5,-5] , [6,-6] , [7,-7] , # down right
+                    [-1,1] , [-2,2] , [-3,3] , [-4,4] , [-5,5] , [-6,6] , [-7,7] , # up left
+                    [-1,-1] , [-2,-2] , [-3,-3] , [-4,-4] , [-5,-5] , [-6,-6] , [-7,-7]  # down left
+                ]
+        shiftedCoords = [
+            [x + src[0], y + src[1]]
+            for x, y in oCoords
+            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
+        ] 
+        
+        def filter_paths(coords , pt , direction):
+            """coords: the list of coordinates to cycle
+            pt: the refrence pt [x , y]
+            coord:  the one coordinate which iterates in pt param."""
+            # use path eqns for sorting. ** in this case x=y
+            if not (pt[0] <= 8 and pt[0] >= 1 and pt[1] <= 8 and pt[1] >= 1 ):
+                return ""
+            elif pt in coords:
+                d = pull_board_square(pt).get("player")
+                if d == player:
+                    coords.remove(pt)
+                    return ""
+                elif d ==  (not player):
+                    # moves.append(pt)
+                    return f"{pt}"
+                else:
+                    coords.remove(pt)
+                    new_pt = None
+                    # new pt logic
+                    match direction:
+                        case "+x":
+                            new_pt = [pt[0] + 1 , pt[1]]
+                        case "-x":
+                            new_pt = [pt[0] - 1 , pt[1]]
+                        case "+y":
+                            new_pt = [pt[0] , pt[1] + 1]
+                        case "-y":
+                            new_pt = [pt[0] , pt[1] - 1]
+                        
+                    return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
+            else:
+                coords.remove(pt) # remove that coord so that reecursion goes smoothly
+
+        def finialize(coords):
+            shifts = [
+                (( 1,  0), "+x"),
+                ((-1,  0), "-x"),
+                (( 0,  1), "+y"),
+                (( 0, -1), "-y"),
+            ]
+
+            all_moves = set()
+
+            for (dx, dy), d_str in shifts:
+                new_pt = [src[0] + dx, src[1] + dy]
+                new_direction = d_str
+                result = eval(filter_paths(coords, new_pt, new_direction))
+                all_moves |= set(result)
+
+            return list(all_moves)
+        return finialize(shiftedCoords)
+
     return moves
 
 # moving a piece 
