@@ -174,14 +174,14 @@ def pull_possible_moves(player , piece , src):
                     new_pt = None
                     # new pt logic
                     match direction:
-                        case "+x":
-                            new_pt = [pt[0] + 1 , pt[1]]
-                        case "-x":
-                            new_pt = [pt[0] - 1 , pt[1]]
-                        case "+y":
-                            new_pt = [pt[0] , pt[1] + 1]
-                        case "-y":
-                            new_pt = [pt[0] , pt[1] - 1]
+                        case "++":
+                            new_pt = [pt[0] + 1 , pt[1] + 1]
+                        case "+-":
+                            new_pt = [pt[0] + 1 , pt[1] - 1]
+                        case "--":
+                            new_pt = [pt[0] - 1 , pt[1] - 1]
+                        case "-+":
+                            new_pt = [pt[0] - 1 , pt[1] + 1]
                         
                     return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
             else:
@@ -189,10 +189,10 @@ def pull_possible_moves(player , piece , src):
 
         def finialize(coords):
             shifts = [
-                (( 1,  0), "+x"),
-                ((-1,  0), "-x"),
-                (( 0,  1), "+y"),
-                (( 0, -1), "-y"),
+                (( 1,  1), "++"),
+                ((-1, -1), "--"),
+                (( 1, -1), "+-"),
+                ((-1,  1), "-+"),
             ]
 
             all_moves = set()
@@ -206,6 +206,61 @@ def pull_possible_moves(player , piece , src):
             return list(all_moves)
         return finialize(shiftedCoords)
 
+    def queen_moves(player: bool):
+        return rook_moves(player) + bishop_moves(player)
+    
+    def knight_moves(player: bool):
+        oCoords = [ [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2] , [1,-2] , [2,-1] ]
+        shiftedCoords = [
+            [x + src[0], y + src[1]]
+            for x, y in oCoords
+            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
+        ] 
+        valid_moves = []
+        for pt in shiftedCoords:
+            d = pull_board_square(pt).get("player")
+            if d == player:
+                continue
+            elif d == (not player):
+                valid_moves.append(pt)
+            else:
+                valid_moves.append(pt)
+        return valid_moves
+
+    def pawn_moves(player: bool):
+        oCoords = [[-1,1] , [0,1] , [1,1]]
+        shiftedCoords = [
+            [x + src[0], y + src[1]]
+            for x, y in oCoords
+            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
+        ] 
+        valid_moves = []
+        for i, pt in enumerate(shiftedCoords):
+            d = pull_board_square(pt).get("player")
+            if i in [0 , 2] and d == (not player):
+                valid_moves.append(pt) # TODO: en passant
+            else:
+                if d != None: valid_moves.append(pt)
+        return valid_moves
+    
+    def king_moves(player: bool):
+        oCoords = [[-1,1] , [0,1] , [1,1] , [1,0] , [1,-1] , [0,-1] , [-1,-1] , [-1,0]]
+        shiftedCoords = [
+            [x + src[0], y + src[1]]
+            for x, y in oCoords
+            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
+        ] 
+        valid_moves = []
+        for pt in shiftedCoords:
+            d = pull_board_square(pt).get("player")
+            if d == player:
+                continue
+            elif d == (not player):
+                valid_moves.append(pt) # TODO: castling and much more
+            else:
+                valid_moves.append(pt)
+        return valid_moves
+    
     return moves
 
 # moving a piece 
