@@ -281,3 +281,4 @@ def move(ACN):
     # check the existence of src piece on board
     if sData.get("player") == mData.get("player") and sData.get("player") == mData.get("player"):
         pass
+    
