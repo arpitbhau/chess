@@ -3,16 +3,24 @@
 import math
 
 # board in a 2d array with row, col and board >>>>>> and ^^^^^^ in the array
-board = [ ["w/r" , "w/n" , "w/b" , "w/q" , "w/k" , "w/b" , "w/n" , "w/r"] ,
-          ["w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p"] ,
+# board = [ ["w/r" , "w/n" , "w/b" , "w/q" , "w/k" , "w/b" , "w/n" , "w/r"] ,
+#           ["w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p"] ,
+#           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+#           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+#           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+#           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+#           ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
+#           ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
+# ]
+board = [ ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+          ["___" , "___" , "___" , "w/k" , "___" , "___" , "___" , "___"] ,
+          ["___" , "___" , "___" , "___" , "w/p" , "___" , "___" , "___"] ,
+          ["___" , "___" , "___" , "___" , "___" , "w/r" , "___" , "___"] ,
+          ["___" , "___" , "___" , "___" , "___" , "___" , "b/b" , "___"] ,
           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
-          ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
+          ["b/k" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] 
 ]
-
 # convert ACN to coords and vise versa
 def coords_convert(val, arrF=False):
     """
@@ -57,12 +65,120 @@ def pull_board_square(sq):
     """
 
     # if array is given don't convert
-    t = [sq[0] - 1 , sq[1] - 1] if sq is list else coords_convert(sq , arrF=True)
+    t = [sq[1] - 1 , sq[0] - 1] if isinstance(sq , list) else coords_convert(sq , arrF=True)
 
     return {
         "player": True if (board[t[0]][t[1]])[0] == "w" else False if (board[t[0]][t[1]])[0] == "b" else None,
-        "piece": (board[t[0]][t[1]])[-1] ,
+        "piece": (board[t[0]][t[1]])[-1] if not (board[t[0]][t[1]])[-1] == "_" else None,
     }
+
+# find the peice
+def find_piece(player , piece , output_format):
+    """
+    get the piece's location.
+    player: True or False
+    piece: r,n,b,q,k,p
+    output_format=list or str
+    return format [[1,2] , [2,2]] --> list or ["a2" , "b2"] --> str
+    """    
+    player = "w" if player else "b" # i'm a fucking genius!
+    locations = []
+    # x_coord, y_coord are in arrFromat make them to board by +1 into both of them.
+    for y_coord,rank in enumerate(board): 
+        for x_coord,r_sq in enumerate(rank): # r_sq means raw_sq in form of b/r
+            if r_sq == f"{player}/{piece}":
+                locations.append([x_coord+1, y_coord+1])
+    return locations if output_format == list else [coords_convert(*coord) for coord in locations] # fucking insane!
+
+# pinned peice logic
+def get_pinned_peices(player):
+    """
+    returns the coords of piece and piece which are pinned for given player.[{piece:'r', coords:[2,2]} , {....}]
+    sq: list or str type
+    how the fuck this works?
+    get all the attacking pieces of !player and draw a line from the !player's piece to the player's piece and check the slope of that line for respective piece,
+    then check the availability of pts (sqaures) between the line's src and dest pts using the eqn of resective piece.
+    """
+    # pinned pieces
+    pps = []
+    # player's king's position
+    p_king = find_piece(player=player, piece="k", output_format=list)[0]
+    # path check between fns for rook and queen
+    def rook_eq_check_between(r):
+            """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
+            pinned = None # just declared something
+            for idx, x in enumerate(range(p_king[0], r[0])): # rook is on right side of king
+                if idx == 0: continue # skip king's square
+                coord = [x , p_king[1]] # the y coord doesn't really matter here
+                sq = pull_board_square(coord)
+                if sq.get("player") == None:
+                    continue
+                elif sq.get("player") == player:
+                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+                else: # sq = not player
+                    break
+            for idx, x in enumerate(range(r[0] + 1 , p_king[0])): # bishop is in left side of king
+                if idx == 0: continue # skip king's square
+                coord = [x , p_king[1]] # the y coord doesn't really matter here
+                sq = pull_board_square(coord)
+                if sq.get("player") == None:
+                    continue
+                elif sq.get("player") == player:
+                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+                else: # sq = not player
+                    break
+            pps.append(pinned)
+    def bishop_eq_check_between(b):
+            """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
+            pinned = None # just declared something
+            for idx, x in enumerate(range(p_king[0] , b[0])): # bishop is in right side of king
+                if idx == 0: continue # skip king's square
+                coord = [x, p_king[1] + idx] if p_king[1] < b[1] else [x , p_king[1] - idx] # again im a fucking genius
+                sq = pull_board_square(coord)
+                if sq.get("player") == None:
+                    continue
+                elif sq.get("player") == player:
+                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+                else: # sq = not player
+                    break
+            for idx, x in enumerate(range(b[0] , p_king[0])): # bishop is in left side of king
+                if idx == 0: continue # skip king's square
+                coord = [x, p_king[1] + 1] if p_king[1] < b[1] else [x , p_king[1] - 1] # again im a fucking genius
+                sq = pull_board_square(coord)
+                if sq.get("player") == None:
+                    continue
+                elif sq.get("player") == player:
+                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+                else: # sq = not player
+                    break
+            pps.append(pinned) if not pinned == "they came with their gang" else None
+    # get the attacking pieces of !player
+    # 1. find all rooks of opponent and calc the pinned piece
+    for r in find_piece(player=not player, piece="r", output_format=list):
+        # draw line to !player's king and check slope of the line
+        try:
+            m = (r[1]-p_king[1]) / (r[0]-p_king[0])
+            if m == 0: rook_eq_check_between(r=r) # m == 0, covers both 0deg and 180deg
+        except ZeroDivisionError: # angle = 90deg or 270deg
+            rook_eq_check_between(r=r)
+    
+    # 2. bishop ......
+    for b in find_piece(player=not player, piece="b", output_format=list):
+        # draw line to !player's king and check slope of the line
+        m = (b[1]-p_king[1]) / (b[0]-p_king[0])
+        if m in [-1 , 1]: bishop_eq_check_between(b=b)
+    
+    # 3. queen ......
+    for q in find_piece(player=not player, piece="q", output_format=list):
+        # draw line to !player's king and check slope of the line
+        try:
+            m = (q[1]-p_king[1]) / (q[0]-p_king[0])
+            if m == 0: rook_eq_check_between(r=q) # rook
+            elif m in [1, -1]: bishop_eq_check_between(b=q) # bishop
+        except ZeroDivisionError:
+            rook_eq_check_between(r=q) # rook with 90deg angle
+    
+    return pps
 
 # pull up the possible moves of a piece, src[1]
 def pull_possible_moves(player , piece , src):
@@ -79,7 +195,7 @@ def pull_possible_moves(player , piece , src):
         # acc to origin
         oCoords = [ [0,1] , [0,2] , [0,3] , [0,4] , [0,5] , [0,6] , [0,7] , # >>>
                     [1,0] , [2,0] , [3,0] , [4,0] , [5,0] , [6,0] , [7,0] , # ^^^
-                    [-1,0] , [-2,0] , [-3,0] , [-4,0] , [-5,0] , [-6,0] , [-7,0] # <<<
+                    [-1,0] , [-2,0] , [-3,0] , [-4,0] , [-5,0] , [-6,0] , [-7,0], # <<<
                     [0,-1] , [0,-2] , [0,-3] , [0,-4] , [0,-5] , [0,-6] , [0,-7]  # down
                 ]
         # shift the origin to src pt (only the coords which fit the board)
@@ -282,3 +398,4 @@ def move(ACN):
     if sData.get("player") == mData.get("player") and sData.get("player") == mData.get("player"):
         pass
     
+print(get_pinned_peices(True))
