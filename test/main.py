@@ -14,9 +14,9 @@ import math
 # ]
 board = [ ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
           ["___" , "___" , "___" , "w/k" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "w/p" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "___" , "w/r" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "___" , "___" , "b/b" , "___"] ,
+          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+          ["___" , "___" , "___" , "w/r" , "___" , "___" , "___" , "___"] ,
+          ["___" , "___" , "___" , "b/r" , "___" , "___" , "___" , "___"] ,
           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
           ["b/k" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] 
@@ -100,7 +100,16 @@ def get_pinned_peices(player):
     then check the availability of pts (sqaures) between the line's src and dest pts using the eqn of resective piece.
     """
     # pinned pieces
+    rook_pps = []
+    bishop_pps = []
+    queen_pps = []
+    
+    # pps = { 'r': rook_pps,
+    #         'b': bishop_pps,
+    #         'q': queen_pps
+    #       }
     pps = []
+    
     # player's king's position
     p_king = find_piece(player=player, piece="k", output_format=list)[0]
     # path check between fns for rook and queen
@@ -117,7 +126,7 @@ def get_pinned_peices(player):
                     pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
                 else: # sq = not player
                     break
-            for idx, x in enumerate(range(r[0] + 1 , p_king[0])): # bishop is in left side of king
+            for idx, x in enumerate(range(r[0] , p_king[0])): # rook is in left side of king
                 if idx == 0: continue # skip king's square
                 coord = [x , p_king[1]] # the y coord doesn't really matter here
                 sq = pull_board_square(coord)
@@ -127,6 +136,28 @@ def get_pinned_peices(player):
                     pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
                 else: # sq = not player
                     break
+            for idx, y in enumerate(range(r[1] , p_king[1])): # rook is in up side of king
+                if idx == 0: continue # skip king's square
+                coord = [p_king[0], y] # the x coord doesn't really matter here
+                sq = pull_board_square(coord)
+                if sq.get("player") == None:
+                    continue
+                elif sq.get("player") == player:
+                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+                else: # sq = not player
+                    break
+            for idx, y in enumerate(range(p_king[1], r[1])): # rook is on down side of king
+                if idx == 0: continue # skip king's square
+                print("ayo! it worked.")
+                coord = [p_king[0], y] # the x coord doesn't really matter here
+                sq = pull_board_square(coord)
+                if sq.get("player") == None:
+                    continue
+                elif sq.get("player") == player:
+                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+                else: # sq = not player
+                    break
+            
             pps.append(pinned)
     def bishop_eq_check_between(b):
             """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
