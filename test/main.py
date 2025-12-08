@@ -3,24 +3,16 @@
 import math
 
 # board in a 2d array with row, col and board >>>>>> and ^^^^^^ in the array
-# board = [ ["w/r" , "w/n" , "w/b" , "w/q" , "w/k" , "w/b" , "w/n" , "w/r"] ,
-#           ["w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p"] ,
-#           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-#           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-#           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-#           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-#           ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
-#           ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
-# ]
-board = [ ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "w/k" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "w/r" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "b/r" , "___" , "___" , "___" , "___"] ,
+board = [ ["w/r" , "w/n" , "w/b" , "w/q" , "w/k" , "w/b" , "w/n" , "w/r"] ,
+          ["w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p"] ,
           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
           ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["b/k" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] 
+          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+          ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
+          ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
 ]
+
 # convert ACN to coords and vise versa
 def coords_convert(val, arrF=False):
     """
@@ -100,14 +92,6 @@ def get_pinned_peices(player):
     then check the availability of pts (sqaures) between the line's src and dest pts using the eqn of resective piece.
     """
     # pinned pieces
-    rook_pps = []
-    bishop_pps = []
-    queen_pps = []
-    
-    # pps = { 'r': rook_pps,
-    #         'b': bishop_pps,
-    #         'q': queen_pps
-    #       }
     pps = []
     
     # player's king's position
@@ -209,7 +193,18 @@ def get_pinned_peices(player):
         except ZeroDivisionError:
             rook_eq_check_between(r=q) # rook with 90deg angle
     
-    return pps
+    # future arpit here, i am too scared to touch my old code i fear that it might break when i try to change the data structure of returned value so im doing the filtering here after the dust has been settled.
+    rook_pps, bishop_pps, queen_pps = [], [], []
+    for pp in pps:
+        match pp.get("piece"):
+            case "r":
+                rook_pps.append(pp.get("coords"))
+            case "b":
+                bishop_pps.append(pp.get("coords"))
+            case "q":
+                queen_pps.append(pp.get("coords"))
+
+    return {"r": rook_pps, "b": bishop_pps, "q": queen_pps}
 
 # pull up the possible moves of a piece, src[1]
 def pull_possible_moves(player , piece , src):
