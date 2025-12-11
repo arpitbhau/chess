@@ -1,17 +1,15 @@
 # radhe radhe
 
-import math
-
-# board in a 2d array with row, col and board >>>>>> and ^^^^^^ in the array
-board = [ ["w/r" , "w/n" , "w/b" , "w/q" , "w/k" , "w/b" , "w/n" , "w/r"] ,
-          ["w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p"] ,
-          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
-          ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
-          ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
-]
+# initiate variables and some other stuff
+def init():
+    global board, en_passant, check
+    tmp = open("./games/template_games/vars.conf").read().splitlines() # man idk the better way to do this.
+    
+    # board in a 2d array with row, col and board >>>>>> and ^^^^^^ in the array
+    board = eval(open("./games/template_game/board.conf").read())
+    en_passant = eval(tmp[0].split("=")[1])
+    check = eval(tmp[1].split("=")[1]) # man i m so bad at these things
+    del tmp # i m just making it exist first so dont judge!
 
 # convert ACN to coords and vise versa
 def coords_convert(val, arrF=False):
@@ -204,19 +202,22 @@ def get_pinned_peices(player):
             case "q":
                 queen_pps.append(pp.get("coords"))
 
-    return {"r": rook_pps, "b": bishop_pps, "q": queen_pps}
+    return {"r": rook_pps, "b": bishop_pps, "q": queen_pps} if pps != [] else "huhhh no pps for him mate" # if there are no pinned pieces
 
 # pull up the possible moves of a piece, src[1]
-def pull_possible_moves(player , piece , src):
+def pull_possible_moves(player: bool , piece: str , src: str):
     """
         how the heck this works?
         => first consider the piece is at origin (0,0) and hardcode the coords possible for the specific piece,
         then shift the origin at src pt and you have the possible moves after that we filter the paths by manualy going thtough all the board squares.
     """
-
     moves = []
     src = coords_convert(src) # convert to coords from acn
     
+    # if its pinned piece or if piece doesnt exist on src square then just stop this fn and send a 401
+    if get_pinned_peices(player=player) == "huhhh no pps for him mate" or not src in find_piece(player=player, piece=piece, output_format=list):
+        return "bro really tried to play and illegal move, take this sucker (401)"
+
     def rook_moves(player: bool):
         # acc to origin
         oCoords = [ [0,1] , [0,2] , [0,3] , [0,4] , [0,5] , [0,6] , [0,7] , # >>>
@@ -370,19 +371,24 @@ def pull_possible_moves(player , piece , src):
         return valid_moves
 
     def pawn_moves(player: bool):
-        oCoords = [[-1,1] , [0,1] , [1,1]]
+        oCoords = [[-1,1] , [0,1] , [1,1]] if player else [[-1,-1], [0,-1] , [1,-1]] # had to do this because pawns can't walk backwards
         shiftedCoords = [
             [x + src[0], y + src[1]]
             for x, y in oCoords
             if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
         ] 
         valid_moves = []
-        for i, pt in enumerate(shiftedCoords):
+        
+        for idx, pt in enumerate(shiftedCoords):
             d = pull_board_square(pt).get("player")
-            if i in [0 , 2] and d == (not player):
-                valid_moves.append(pt) # TODO: en passant
+            if idx in [0 , 2] and d == (not player):
+                valid_moves.append(pt) # capture move
             else:
-                if d != None: valid_moves.append(pt)
+                if d == None: valid_moves.append(pt) # move forward
+        
+        # if the pawn is at starting position (2nd or 7th depends) then this sucker can do a jump to 2 blocks
+        if src[1] in [2,7]:
+            pass
         return valid_moves
     
     def king_moves(player: bool):
@@ -424,4 +430,5 @@ def move(ACN):
     if sData.get("player") == mData.get("player") and sData.get("player") == mData.get("player"):
         pass
     
-print(get_pinned_peices(True))
+
+init()
