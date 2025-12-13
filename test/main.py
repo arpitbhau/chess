@@ -2,11 +2,13 @@
 
 # initiate variables and some other stuff
 def init():
-    global board, en_passant, check
+    global board, en_passant, check, board_file, moves_sheet_file
     tmp = open("./games/template_games/vars.conf").read().splitlines() # man idk the better way to do this.
-    
+    board_file = open("./games/template_game/board.conf", "r+") # read + write but overwriting the file
+    moves_sheet_file = open("./games/template_game/moves_sheet.txt" , "a+") # read + write but writing goes to the EOF.
+
     # board in a 2d array with row, col and board >>>>>> and ^^^^^^ in the array
-    board = eval(open("./games/template_game/board.conf").read())
+    board = eval(board_file.read())
     en_passant = eval(tmp[0].split("=")[1])
     check = eval(tmp[1].split("=")[1]) # man i m so bad at these things
     del tmp # i m just making it exist first so dont judge!
@@ -79,6 +81,16 @@ def find_piece(player , piece , output_format):
             if r_sq == f"{player}/{piece}":
                 locations.append([x_coord+1, y_coord+1])
     return locations if output_format == list else [coords_convert(*coord) for coord in locations] # fucking insane!
+
+# place piece onto board
+def place_piece(player: bool, piece: str, src: list, dest: list):
+    # change board
+    board[src[1] - 1][src[0] - 1] = "___"
+    board[dest[1] - 1][dest[0] - 1] = f"{'w' if player else 'b'}/{piece}"
+    board_file.write(f"{board}")
+    # update moves sheet
+    moves_sheet_file.write(f"{'w' if player else 'b'} {piece} {src} {dest}\n")
+    return 200
 
 # pinned peice logic
 def get_pinned_peices(player):
@@ -205,15 +217,15 @@ def get_pinned_peices(player):
     return {"r": rook_pps, "b": bishop_pps, "q": queen_pps} if pps != [] else "huhhh no pps for him mate" # if there are no pinned pieces
 
 # pull up the possible moves of a piece, src[1]
-def pull_possible_moves(player: bool , piece: str , src: str):
+def pull_possible_moves(player: bool , piece: str , src: str, dest: str):
     """
         how the heck this works?
         => first consider the piece is at origin (0,0) and hardcode the coords possible for the specific piece,
         then shift the origin at src pt and you have the possible moves after that we filter the paths by manualy going thtough all the board squares.
     """
     moves = []
-    src = coords_convert(src) # convert to coords from acn
-    
+    src, dest = coords_convert(src), coords_convert(dest) # convert to coords from acn
+
     # if its pinned piece or if piece doesnt exist on src square then just stop this fn and send a 401
     if get_pinned_peices(player=player) == "huhhh no pps for him mate" or not src in find_piece(player=player, piece=piece, output_format=list):
         return "bro really tried to play and illegal move, take this sucker (401)"
@@ -283,7 +295,7 @@ def pull_possible_moves(player: bool , piece: str , src: str):
 
             return list(all_moves)
         return finialize(shiftedCoords)
-    
+
     def bishop_moves(player: bool):
         # acc to origin
         oCoords = [ [1, 1] , [2,2] , [3 , 3] , [4,4] , [5,5] , [6,6] , [7,7] , # up right
@@ -295,8 +307,8 @@ def pull_possible_moves(player: bool , piece: str , src: str):
             [x + src[0], y + src[1]]
             for x, y in oCoords
             if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
-        ] 
-        
+        ]
+ 
         def filter_paths(coords , pt , direction):
             """coords: the list of coordinates to cycle
             pt: the refrence pt [x , y]
@@ -351,7 +363,7 @@ def pull_possible_moves(player: bool , piece: str , src: str):
 
     def queen_moves(player: bool):
         return rook_moves(player) + bishop_moves(player)
-    
+
     def knight_moves(player: bool):
         oCoords = [ [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2] , [1,-2] , [2,-1] ]
         shiftedCoords = [
@@ -387,10 +399,11 @@ def pull_possible_moves(player: bool , piece: str , src: str):
                 if d == None: valid_moves.append(pt) # move forward
         
         # if the pawn is at starting position (2nd or 7th depends) then this sucker can do a jump to 2 blocks
-        if src[1] in [2,7]:
+        if player and src[1] == 2:
             pass
+        elif 
         return valid_moves
-    
+
     def king_moves(player: bool):
         oCoords = [[-1,1] , [0,1] , [1,1] , [1,0] , [1,-1] , [0,-1] , [-1,-1] , [-1,0]]
         shiftedCoords = [
@@ -408,7 +421,7 @@ def pull_possible_moves(player: bool , piece: str , src: str):
             else:
                 valid_moves.append(pt)
         return valid_moves
-    
+
     return moves
 
 # moving a piece 
@@ -429,6 +442,6 @@ def move(ACN):
     # check the existence of src piece on board
     if sData.get("player") == mData.get("player") and sData.get("player") == mData.get("player"):
         pass
-    
+
 
 init()
