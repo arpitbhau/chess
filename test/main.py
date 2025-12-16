@@ -404,20 +404,24 @@ def pull_possible_moves(player: bool , piece: str , src: str, dest: str):
             valid_moves.append([src[0], 4])
             # enable en_passant for not player
             if [src[0]-1, 4] in adjacent_pawns: # left pawn (acc to white's pov)
-                en_passant = {'for': False, 'to_capture': src, 'go_to': [src[0], src[0]-1]}
+                en_passant = {'for': False, 'to_capture': src, 'go_to': [src[0], src[1]-1]}
             elif [src[0]+1, 4] in adjacent_pawns: # right pawn (acc to white's pov)
-                en_passant = {'for': False, 'to_capture': src, 'go_to': [src[0], src[0]-1]}
-        elif not player and src[1] == 7: # black's pawn jumping 2 blocks
+                en_passant = {'for': False, 'to_capture': src, 'go_to': [src[0], src[1]-1]}
+        elif (not player) and src[1] == 7: # black's pawn jumping 2 blocks
             valid_moves.append([src[0], 5])
             # en_passant
             if [src[0]-1, 5] in adjacent_pawns: # right pwn (acc to white's pov)
-                en_passant = {'for': True, 'to_capture': src, 'go_to': [src[0], src[0]-1]}
+                en_passant = {'for': True, 'to_capture': src, 'go_to': [src[0], src[1]+1]}
             elif [src[0]+1, 4] in adjacent_pawns: # left pawn (acc to white's pov)
-                en_passant = {'for': True, 'to_capture': src, 'go_to': [src[0], src[0]-1]}
+                en_passant = {'for': True, 'to_capture': src, 'go_to': [src[0], src[1]+1]}
 
         # en_passant (the illegal move noobs dont know about.)
-        if en_passant["for"] == player: # im a fucking genius
-            valid_moves.append()
+        if en_passant["for"] == player: # im a fucking genius. only real ones can understand this 'if' part
+            try:
+                valid_moves.append(en_passant.get("go_to"))
+                en_passant = None
+            except Exception as e:
+                print(f"error occured at line 423 or at en_passant code: \n{e}")
 
         return valid_moves
 
