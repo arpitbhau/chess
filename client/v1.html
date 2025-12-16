@@ -191,6 +191,12 @@
                 sourceSquare = e.target.parentElement.dataset.square;
                 e.dataTransfer.effectAllowed = 'move';
                 e.target.classList.add('dragging');
+                
+                // Use a 1x1 transparent image as drag image, positioned at center
+                const img = new Image();
+                img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+                e.dataTransfer.setDragImage(img, 0, 0);
+                
                 console.log(`Started dragging ${e.target.dataset.piece} from ${sourceSquare}`);
             });
 

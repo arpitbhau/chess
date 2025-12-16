@@ -388,20 +388,37 @@ def pull_possible_moves(player: bool , piece: str , src: str, dest: str):
             [x + src[0], y + src[1]]
             for x, y in oCoords
             if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
-        ] 
+        ]
         valid_moves = []
-        
+ 
         for idx, pt in enumerate(shiftedCoords):
             d = pull_board_square(pt).get("player")
             if idx in [0 , 2] and d == (not player):
                 valid_moves.append(pt) # capture move
             else:
                 if d == None: valid_moves.append(pt) # move forward
-        
+
         # if the pawn is at starting position (2nd or 7th depends) then this sucker can do a jump to 2 blocks
+        adjacent_pawns = find_piece(player=not player, piece=piece, output_format=list) # player=false, piece='p' is the only case 
         if player and src[1] == 2:
-            pass
-        elif 
+            valid_moves.append([src[0], 4])
+            # enable en_passant for not player
+            if [src[0]-1, 4] in adjacent_pawns:
+                en_passant = {'for': False, 'to_capture': src}
+            elif [src[0]+1, 4] in adjacent_pawns:
+                en_passant = {'for': False, 'to_capture': src}
+        elif not player and src[1] == 7:
+            valid_moves.append([src[0], 5])
+            # en_passant
+            if [src[0]-1, 5] in adjacent_pawns:
+                en_passant = {'for': True, 'to_capture': src}
+            elif [src[0]+1, 4] in adjacent_pawns:
+                en_passant = {'for': True, 'to_capture': src}
+
+        # en_passant (the illegal move noobs dont know about.)
+        if en_passant["for"] == player: # white to player
+            valid_moves.append()
+
         return valid_moves
 
     def king_moves(player: bool):
