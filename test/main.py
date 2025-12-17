@@ -64,8 +64,18 @@ def pull_board_square(sq):
         "piece": (board[t[0]][t[1]])[-1] if not (board[t[0]][t[1]])[-1] == "_" else None,
     }
 
+# place piece onto board
+def place_piece(player: bool, piece: str, src: list, dest: list):
+    # change board
+    board[src[1] - 1][src[0] - 1] = "___"
+    board[dest[1] - 1][dest[0] - 1] = f"{'w' if player else 'b'}/{piece}"
+    board_file.write(f"{board}")
+    # update moves sheet
+    moves_sheet_file.write(f"{'w' if player else 'b'} {piece} {src} {dest}\n")
+    return 200
+
 # find the peice
-def find_piece(player , piece , output_format):
+def find_piece(player:bool , piece:str , output_format):
     """
     get the piece's location.
     player: True or False
@@ -82,18 +92,17 @@ def find_piece(player , piece , output_format):
                 locations.append([x_coord+1, y_coord+1])
     return locations if output_format == list else [coords_convert(*coord) for coord in locations] # fucking insane!
 
-# place piece onto board
-def place_piece(player: bool, piece: str, src: list, dest: list):
-    # change board
-    board[src[1] - 1][src[0] - 1] = "___"
-    board[dest[1] - 1][dest[0] - 1] = f"{'w' if player else 'b'}/{piece}"
-    board_file.write(f"{board}")
-    # update moves sheet
-    moves_sheet_file.write(f"{'w' if player else 'b'} {piece} {src} {dest}\n")
-    return 200
+# get protectors of a piece
+def get_protectors(cop: list): # really, cop? come on dude - by_myself
+    """ give 'coords of piece(cop)' of whose protectors are to be found.
+    returns {'player': player, 'pieces': [{'piece': 'example_piece', coords: [example_coords]}, ....]}
+    if no pieces returns 'None'
+    """
+    # logic: kinda similiar algo to pinned piece algo
+    
 
 # pinned peice logic
-def get_pinned_peices(player):
+def get_pinned_peices(player: bool):
     """
     returns the coords of piece and piece which are pinned for given player.[{piece:'r', coords:[2,2]} , {....}]
     sq: list or str type
@@ -438,7 +447,7 @@ def pull_possible_moves(player: bool , piece: str , src: str, dest: str):
             if d == player:
                 continue
             elif d == (not player):
-                valid_moves.append(pt) # TODO: castling and much more
+                valid_moves.append(pt) # TODO: not able to capture protected pieces
             else:
                 valid_moves.append(pt)
         return valid_moves
@@ -446,7 +455,7 @@ def pull_possible_moves(player: bool , piece: str , src: str, dest: str):
     return moves
 
 # moving a piece 
-def move(ACN):
+def move(ACN: str):
     # destructure acn
     dACN = ACN.split(" ") # acn => "w r d2 d4"
     # move data
