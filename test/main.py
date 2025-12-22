@@ -556,7 +556,7 @@ def pull_possible_moves(player: bool, piece: str, src: str, dest: str):
                 valid_moves.append(en_passant.get("go_to"))
                 en_passant = None
             except Exception as e:
-                print(f"error occured at line 423 or at en_passant code: \n{e}")
+                print(f"error occured at en_passant code: \n{e}")
 
         return valid_moves
 
