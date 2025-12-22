@@ -75,7 +75,7 @@ def place_piece(player: bool, piece: str, src: list, dest: list):
     return 200
 
 # find the peice
-def find_piece(player:bool , piece:str , output_format):
+def find_piece(player:bool, piece:str, output_format: type):
     """
     get the piece's location.
     player: True or False
@@ -89,17 +89,145 @@ def find_piece(player:bool , piece:str , output_format):
     for y_coord,rank in enumerate(board): 
         for x_coord,r_sq in enumerate(rank): # r_sq means raw_sq in form of b/r
             if r_sq == f"{player}/{piece}":
-                locations.append([x_coord+1, y_coord+1])
+                locations.append([x_coord+1, y_coord+1]) # +1 because the coords were accordig to array indexing i.e 0,0 is origin 
     return locations if output_format == list else [coords_convert(*coord) for coord in locations] # fucking insane!
 
 # get protectors of a piece
-def get_protectors(cop: list): # really, cop? come on dude - by_myself
-    """ give 'coords of piece(cop)' of whose protectors are to be found.
+def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by_myself
+    """ give 'coords of square(cos)' of whose protectors are to be found and the guy who u want to see protecting.
     returns {'player': player, 'pieces': [{'piece': 'example_piece', coords: [example_coords]}, ....]}
     if no pieces returns 'None'
     """
     # logic: kinda similiar algo to pinned piece algo
+    victim = pull_board_square(cos) # victim's info
+
+    rook_protectors=[] #
+    knight_protectors=[]
+    bishop_protectors=[] #
+    queen_protectors=[] #
+    king_protectors=[]
+    pawn_protectors=[]
+
+    # find victim's allies
+    # 1. THE ROOOOOKKKKK!!!!
+    def rook_eq_check_between(r: list, queen_bandage_to_fn=False):
+        """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
+        protecting_guy = None # just declared something
+        for idx, x in enumerate(range(victim[0], r[0])): # rook is on right side of king
+            if idx == 0: continue # skip king's square
+            # at last iteration
+            elif idx == len(range(victim[0], r[0])) - 1 and sq.get("player") == None:
+                protecting_guy = r # set this rook as the protecting_guy [THE BIG BRO!]
+            coord = [x , victim[1]] # the y coord doesn't really matter here
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == protector:
+                break
+            else: # sq = not protector
+                break
+        for idx, x in enumerate(range(r[0] , victim[0])): # rook is in left side of king
+            if idx == 0: continue # skip king's square
+            # at last iteration
+            elif idx == len(range(r[0] , victim[0])) - 1 and sq.get("player") == None:
+                protecting_guy = r # set this rook as the protecting_guy [THE BIG BRO!]
+            coord = [x , victim[1]] # the y coord doesn't really matter here
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == protector:
+                break
+            else: # sq = not protector
+                break
+        for idx, y in enumerate(range(r[1] , victim[1])): # rook is in up side of king
+            if idx == 0: continue # skip king's square
+            # at last iteration
+            elif idx == len(range(r[1] , victim[1])) - 1 and sq.get("player") == None:
+                protecting_guy = r # set this rook as the protecting_guy [THE BIG BRO!]
+            coord = [victim[0], y] # the x coord doesn't really matter here
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == protector:
+                break
+            else: # sq = not protector
+                break
+        for idx, y in enumerate(range(victim[1], r[1])): # rook is on down side of king
+            if idx == 0: continue # skip king's square
+            # at last iteration
+            elif idx == len(range(victim[1] , r[1])) - 1 and sq.get("player") == None:
+                protecting_guy = r # set this rook as the protecting_guy [THE BIG BRO!]
+            coord = [victim[0], y] # the x coord doesn't really matter here
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == protector:
+                break
+            else: # sq = not protector
+                break
+        queen_protectors.append(protecting_guy) if queen_bandage_to_fn else rook_protectors.append(protecting_guy)
+    for r in find_piece(player=protector, piece='r', output_format=list):
+        # draw line and check path between just like pinned piece
+        try:
+            m = (r[1]-victim[1]) / (r[0]-victim[0])
+            if m == 0: rook_eq_check_between(r=r) # m == 0, covers both 0deg and 180deg
+        except ZeroDivisionError: # angle = 90deg or 270deg
+            rook_eq_check_between(r=r)
+
+    # 2. bishop
+    def bishop_eq_check_between(b: list, queen_bandage_to_fn=False):
+        """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
+        protecting_guy = None # just declared something
+        for idx, x in enumerate(range(victim[0] , b[0])): # bishop is in right side of king
+            if idx == 0: continue # skip king's square
+            # at last iteration
+            elif idx == len(range(victim[0], b[0])) - 1 and sq.get("player") == None:
+                protecting_guy = r # set this rook as the protecting_guy [THE SNIPER!]
+            coord = [x, victim[1] + idx] if victim[1] < b[1] else [x , victim[1] - idx] # again im a fucking genius
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == protector:
+                break
+            else: # sq = not player
+                break
+        for idx, x in enumerate(range(b[0] , victim[0])): # bishop is in left side of king
+            if idx == 0: continue # skip king's square
+            # at last iteration
+            elif idx == len(range(b[0], victim[0])) - 1 and sq.get("player") == None:
+                protecting_guy = r # set this rook as the protecting_guy [THE SNIPER!]
+            coord = [x, victim[1] + 1] if victim[1] < b[1] else [x , victim[1] - 1] # again im a fucking genius
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == protector:
+                break
+            else: # sq = not player
+                break
+        queen_protectors.append(protecting_guy) if queen_bandage_to_fn else bishop_protectors.append(protecting_guy)
+    for b in find_piece(player=protector, piece="b", output_format=list):
+        # draw line to !player's king and check slope of the line
+        m = (b[1]-victim[1]) / (b[0]-victim[0])
+        if m in [-1 , 1]: bishop_eq_check_between(b=b)
     
+    # 3. queen ......
+    # queen = rook + bishop , so no fn needed this time sucker! 
+    for q in find_piece(player=protector, piece="q", output_format=list):
+        # draw line to !player's king and check slope of the line
+        try:
+            m = (q[1]-victim[1]) / (q[0]-victim[0])
+            if m == 0: rook_eq_check_between(r=q, queen_bandage_to_fn=True) # rook
+            elif m in [1, -1]: bishop_eq_check_between(b=q, queen_bandage_to_fn=True) # bishop
+        except ZeroDivisionError:
+            rook_eq_check_between(r=q) # rook with 90deg angle
+    
+    return {'r': rook_protectors,
+            'n': knight_protectors,
+            'b': bishop_protectors,
+            'q': queen_protectors,
+            'k': king_protectors,
+            'p': pawn_protectors
+        }
 
 # pinned peice logic
 def get_pinned_peices(player: bool):
@@ -117,75 +245,74 @@ def get_pinned_peices(player: bool):
     p_king = find_piece(player=player, piece="k", output_format=list)[0]
     # path check between fns for rook and queen
     def rook_eq_check_between(r):
-            """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
-            pinned = None # just declared something
-            for idx, x in enumerate(range(p_king[0], r[0])): # rook is on right side of king
-                if idx == 0: continue # skip king's square
-                coord = [x , p_king[1]] # the y coord doesn't really matter here
-                sq = pull_board_square(coord)
-                if sq.get("player") == None:
-                    continue
-                elif sq.get("player") == player:
-                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
-                else: # sq = not player
-                    break
-            for idx, x in enumerate(range(r[0] , p_king[0])): # rook is in left side of king
-                if idx == 0: continue # skip king's square
-                coord = [x , p_king[1]] # the y coord doesn't really matter here
-                sq = pull_board_square(coord)
-                if sq.get("player") == None:
-                    continue
-                elif sq.get("player") == player:
-                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
-                else: # sq = not player
-                    break
-            for idx, y in enumerate(range(r[1] , p_king[1])): # rook is in up side of king
-                if idx == 0: continue # skip king's square
-                coord = [p_king[0], y] # the x coord doesn't really matter here
-                sq = pull_board_square(coord)
-                if sq.get("player") == None:
-                    continue
-                elif sq.get("player") == player:
-                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
-                else: # sq = not player
-                    break
-            for idx, y in enumerate(range(p_king[1], r[1])): # rook is on down side of king
-                if idx == 0: continue # skip king's square
-                print("ayo! it worked.")
-                coord = [p_king[0], y] # the x coord doesn't really matter here
-                sq = pull_board_square(coord)
-                if sq.get("player") == None:
-                    continue
-                elif sq.get("player") == player:
-                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
-                else: # sq = not player
-                    break
+        """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
+        pinned = None # just declared something
+        for idx, x in enumerate(range(p_king[0], r[0])): # rook is on right side of king
+            if idx == 0: continue # skip king's square
+            coord = [x , p_king[1]] # the y coord doesn't really matter here
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == player:
+                pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+            else: # sq = not player
+                break
+        for idx, x in enumerate(range(r[0] , p_king[0])): # rook is in left side of king
+            if idx == 0: continue # skip king's square
+            coord = [x , p_king[1]] # the y coord doesn't really matter here
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == player:
+                pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+            else: # sq = not player
+                break
+        for idx, y in enumerate(range(r[1] , p_king[1])): # rook is in up side of king
+            if idx == 0: continue # skip king's square
+            coord = [p_king[0], y] # the x coord doesn't really matter here
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == player:
+                pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+            else: # sq = not player
+                break
+        for idx, y in enumerate(range(p_king[1], r[1])): # rook is on down side of king
+            if idx == 0: continue # skip king's square
+            coord = [p_king[0], y] # the x coord doesn't really matter here
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == player:
+                pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+            else: # sq = not player
+                break
             
-            pps.append(pinned)
+        pps.append(pinned)
     def bishop_eq_check_between(b):
-            """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
-            pinned = None # just declared something
-            for idx, x in enumerate(range(p_king[0] , b[0])): # bishop is in right side of king
-                if idx == 0: continue # skip king's square
-                coord = [x, p_king[1] + idx] if p_king[1] < b[1] else [x , p_king[1] - idx] # again im a fucking genius
-                sq = pull_board_square(coord)
-                if sq.get("player") == None:
-                    continue
-                elif sq.get("player") == player:
-                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
-                else: # sq = not player
-                    break
-            for idx, x in enumerate(range(b[0] , p_king[0])): # bishop is in left side of king
-                if idx == 0: continue # skip king's square
-                coord = [x, p_king[1] + 1] if p_king[1] < b[1] else [x , p_king[1] - 1] # again im a fucking genius
-                sq = pull_board_square(coord)
-                if sq.get("player") == None:
-                    continue
-                elif sq.get("player") == player:
-                    pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
-                else: # sq = not player
-                    break
-            pps.append(pinned) if not pinned == "they came with their gang" else None
+        """run check for both +x and -x the one which is not correct will drop out because of range() fn"""
+        pinned = None # just declared something
+        for idx, x in enumerate(range(p_king[0] , b[0])): # bishop is in right side of king
+            if idx == 0: continue # skip king's square
+            coord = [x, p_king[1] + idx] if p_king[1] < b[1] else [x , p_king[1] - idx] # again im a fucking genius
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == player:
+                pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+            else: # sq = not player
+                break
+        for idx, x in enumerate(range(b[0] , p_king[0])): # bishop is in left side of king
+            if idx == 0: continue # skip king's square
+            coord = [x, p_king[1] + 1] if p_king[1] < b[1] else [x , p_king[1] - 1] # again im a fucking genius
+            sq = pull_board_square(coord)
+            if sq.get("player") == None:
+                continue
+            elif sq.get("player") == player:
+                pinned = {"piece": sq.get("piece"), "coords": coord} if pinned == None else "they came with their gang"
+            else: # sq = not player
+                break
+        pps.append(pinned) if not pinned == "they came with their gang" else None
     # get the attacking pieces of !player
     # 1. find all rooks of opponent and calc the pinned piece
     for r in find_piece(player=not player, piece="r", output_format=list):
@@ -226,7 +353,7 @@ def get_pinned_peices(player: bool):
     return {"r": rook_pps, "b": bishop_pps, "q": queen_pps} if pps != [] else "huhhh no pps for him mate" # if there are no pinned pieces
 
 # pull up the possible moves of a piece, src[1]
-def pull_possible_moves(player: bool , piece: str , src: str, dest: str):
+def pull_possible_moves(player: bool, piece: str, src: str, dest: str):
     """
         how the heck this works?
         => first consider the piece is at origin (0,0) and hardcode the coords possible for the specific piece,
@@ -252,7 +379,7 @@ def pull_possible_moves(player: bool , piece: str , src: str, dest: str):
             for x, y in oCoords
             if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
         ] # coords on board imagining there are no peices except the piece(in this case the rooooookkkkk).
-        
+
         def filter_paths(coords , pt , direction):
             """coords: the list of coordinates to cycle
             pt: the refrence pt [x , y]
@@ -281,7 +408,6 @@ def pull_possible_moves(player: bool , piece: str , src: str, dest: str):
                             new_pt = [pt[0] , pt[1] + 1]
                         case "-y":
                             new_pt = [pt[0] , pt[1] - 1]
-                        
                     return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
             else:
                 coords.remove(pt) # remove that coord so that reecursion goes smoothly
@@ -467,11 +593,11 @@ def move(ACN: str):
     }
     # src and dest square data
     sData = pull_board_square(mData.get("src"))
-    dData = pull_board_square(mData.get("dest"))
 
     # check the existence of src piece on board
     if sData.get("player") == mData.get("player") and sData.get("player") == mData.get("player"):
-        pass
-
+        # if the dest mv is in possible moves
+        if coords_convert(mData.get("dest")) in pull_possible_moves(player=mData.get("player"), piece=mData.get("piece"), src=mData.get("src"), dest=mData.get("dest")):
+            pass
 
 init()
