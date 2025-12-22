@@ -221,6 +221,45 @@ def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by
         except ZeroDivisionError:
             rook_eq_check_between(r=q) # rook with 90deg angle
     
+    # 4. knight
+    def kinght_squares(src):
+        oCoords = [ [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2] , [1,-2] , [2,-1] ]
+        shiftedCoords = [
+            [x + src[0], y + src[1]]
+            for x, y in oCoords
+            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
+        ]
+        return shiftedCoords
+    for n in find_piece(player=protector, piece='n', output_format=list):
+        if cos in kinght_squares(src=n): # get the squares covering that specific knight
+            knight_protectors.append(n) # add that knight to the protectors
+
+    # 5. king
+    def king_squares(src):
+        oCoords = [[-1,1] , [0,1] , [1,1] , [1,0] , [1,-1] , [0,-1] , [-1,-1] , [-1,0]]
+        shiftedCoords = [
+            [x + src[0], y + src[1]]
+            for x, y in oCoords
+            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
+        ]
+        return shiftedCoords
+    for k in find_piece(player=protector, piece='k', output_format=list):
+        if cos in king_squares(src=k): # get the squares covering that specific king
+            king_protectors.append(k) # add that king to the protectors
+
+    # 6. pawn
+    def pawn_squares(src):
+        oCoords = [[-1,1] , [1,1]] if protector else [[-1,-1], [1,-1]] # why not the forward step? 'cause that isnt the attacking sqaure of pawn
+        shiftedCoords = [
+            [x + src[0], y + src[1]]
+            for x, y in oCoords
+            if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
+        ]
+        return shiftedCoords
+    for p in find_piece(player=protector, piece='p', output_format=list):
+        if cos in king_squares(src=p): # get the squares covering that specific king
+            pawn_protectors.append(p) # add that king to the protectors
+    
     return {'r': rook_protectors,
             'n': knight_protectors,
             'b': bishop_protectors,
@@ -598,6 +637,6 @@ def move(ACN: str):
     if sData.get("player") == mData.get("player") and sData.get("player") == mData.get("player"):
         # if the dest mv is in possible moves
         if coords_convert(mData.get("dest")) in pull_possible_moves(player=mData.get("player"), piece=mData.get("piece"), src=mData.get("src"), dest=mData.get("dest")):
-            pass
+            place_piece(player=mData.get("player"), piece=mData.get("piece"), src=mData.get("src"), dest=mData.get("dest"))
 
 init()
