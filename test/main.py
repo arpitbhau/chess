@@ -2,16 +2,52 @@
 
 # initiate variables and some other stuff
 def init():
-    global board, en_passant, check, board_file, moves_sheet_file
-    tmp = open("./games/template_games/vars.conf").read().splitlines() # man idk the better way to do this.
+    global board, en_passant, check, castleRights, board_file, moves_sheet_file, vars_file
+    vars_file = open("./games/template_games/vars.conf" , "r+") # man idk the better way to do this.
     board_file = open("./games/template_game/board.conf", "r+") # read + write but overwriting the file
     moves_sheet_file = open("./games/template_game/moves_sheet.txt" , "a+") # read + write but writing goes to the EOF.
 
     # board in a 2d array with row, col and board >>>>>> and ^^^^^^ in the array
     board = eval(board_file.read())
-    en_passant = eval(tmp[0].split("=")[1])
-    check = eval(tmp[1].split("=")[1]) # man i m so bad at these things
-    del tmp # i m just making it exist first so dont judge!
+    tmp = vars_file.read().splitlines()
+    en_passant = eval(vars_file[0].split("=")[1])
+    check = eval(vars_file[1].split("=")[1]) # man i m so bad at these things
+    check = eval(vars_file[2].split("=")[2])
+    castleRights = eval(vars_file[2].split("=")[2])
+
+# read var
+def read_var():
+    pass
+
+# update vars to file
+def update_var(key, val):
+    # vars_file is global
+    # Go to start and read entire file
+    vars_file.seek(0)
+    lines = vars_file.readlines()
+
+    key_found = False
+    new_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Match lines like: key = something
+        if stripped.startswith(f"{key}=") or stripped.startswith(f"{key} ="):
+            new_lines.append(f"{key}={repr(val)}\n")
+            key_found = True
+        else:
+            new_lines.append(line)
+
+    # If key doesn't exist, append it
+    if not key_found:
+        new_lines.append(f"{key}={repr(val)}\n")
+
+    # Rewrite file
+    vars_file.seek(0)
+    vars_file.truncate()
+    vars_file.writelines(new_lines)
+    vars_file.flush()
 
 # convert ACN to coords and vise versa
 def coords_convert(val, arrF=False):
@@ -612,11 +648,41 @@ def pull_possible_moves(player: bool, piece: str, src: str, dest: str):
             if d == player:
                 continue
             elif d == (not player):
-                valid_moves.append(pt) # TODO: not able to capture protected pieces
+                valid_moves.append(pt)
             else:
                 valid_moves.append(pt)
-        return valid_moves
+        
+        # castling
+        # TODO: change castle rights after a normal king move
+        if castleRights.get("w" if player else "b"):
+            # if both consective squares are protected or players own piece reside there
+            if not [src[0] + 1, src[1]] in get_protectors(protector=not player, cos=[src[0] + 1, src[1]]).values() or pull_board_square([src[0] + 1, src[1]]).get("player") == player:
+                if not [src[0] + 2, src[1]] in get_protectors(protector=not player, cos=[src[0] + 2, src[1]]).values() or pull_board_square([src[0] + 2, src[1]]).get("player") == player:
+                    # add that castling square sucker
+                    valid_moves.append([src[0] + 2, src[1]])
+                    # upadate var
+                    if dest == [src[0] + 2, src[1]]:
+                        update_var(key="castleRights", val={"w": False if player else True, "b": False if not player else True})
+            if not [src[0] - 1, src[1]] in get_protectors(protector=not player, cos=[src[0] - 1, src[1]]).values() or pull_board_square([src[0] - 1, src[1]]).get("player") == player:
+                if not [src[0] + 2, src[1]] in get_protectors(protector=not player, cos=[src[0] - 2, src[1]]).values() or pull_board_square([src[0] - 2, src[1]]).get("player") == player:
+                    # add that castling square sucker
+                    valid_moves.append([src[0] - 2, src[1]])
+                    # upadate var
+                    if dest == [src[0] + 2, src[1]]:
+                        update_var(key="castleRights", val={"w": False if player else True, "b": False if not player else True})
+        
+        # rm castle rights if its just a normal move instead of castling before
+         
 
+        # remove the squares where there are protection by enemy
+        for valid_move in valid_moves:
+            for cosp in get_protectors(protector=not player, cos=valid_move).values(): # cosp -> coords of square protectors
+                for coord in cosp:
+                    try: valid_moves.remove(coord)
+                    except ValueError: continue
+
+        return valid_moves
+    
     return moves
 
 # moving a piece 
