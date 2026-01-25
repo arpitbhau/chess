@@ -1,6 +1,7 @@
 # radhe radhe
 
 # initiate variables and some other stuff
+# future arpit here, anyone wondering why this fn isn't used? 'cause i am too lazy to add the multiple game support so if anyone what to use this shitty init fn just update the init fn according to your way of handling all of this shitty code.
 def init():
     global board, en_passant, check, castleRights, board_file, moves_sheet_file, vars_file
     vars_file = open("./games/template_games/vars.conf" , "r+") # man idk the better way to do this.
@@ -15,11 +16,28 @@ def init():
     check = eval(vars_file[2].split("=")[2])
     castleRights = eval(vars_file[2].split("=")[2])
 
+# fucking bandage for the wound named init fn
+board = [
+        ["w/r" , "w/n" , "w/b" , "w/q" , "w/k" , "w/b" , "w/n" , "w/r"] ,
+        ["w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p" , "w/p"] ,
+        ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+        ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+        ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+        ["___" , "___" , "___" , "___" , "___" , "___" , "___" , "___"] ,
+        ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
+        ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
+]
+en_passant=None
+check=None
+castleRights={"w": True, "b": False}
+game_status=None
+
 # read var
 def read_var():
     pass
 
 # update vars to file
+
 def update_var(key, val):
     # vars_file is global
     # Go to start and read entire file
@@ -50,7 +68,7 @@ def update_var(key, val):
     vars_file.flush()
 
 # convert ACN to coords and vise versa
-def coords_convert(val, arrF=False):
+def coords_convert(val: str | list, arrF=False):
     """
         use arrF (arrayFormat) = True when u need coords for array indexing
     """
@@ -87,7 +105,7 @@ def coords_convert(val, arrF=False):
     raise ValueError("Invalid input")
 
 # pulling up board data
-def pull_board_square(sq):
+def pull_board_square(sq: str | list):
     """
     takes the acn or coords[acc to board (1,1) is leftmost corner] and returns the position info as dict
     """
