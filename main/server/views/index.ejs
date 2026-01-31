@@ -1,0 +1,34 @@
+<!-- radhe radhe -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket Test</title>
+</head>
+<body>
+  <h1>WebSocket Test</h1>
+  <button id="send">Send Event</button>
+
+  <!-- socket.io client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    socket.on("connect", () => {
+      console.log("Connected to server");
+    });
+
+    // send event to server
+    document.getElementById("send").addEventListener("click", () => {
+      socket.emit("socket_test_event", {
+        message: "Hello from client 👋"
+      });
+    });
+
+    // receive event from server
+    socket.on("socket_test_event", (data) => {
+      console.log("Received from server:", data);
+    });
+  </script>
+</body>
+</html>
+
