@@ -1,3 +1,3 @@
 # this project is under construction.
 
-will be completed before the end of dec 2025
+the final code will be released on 1 feb 2026

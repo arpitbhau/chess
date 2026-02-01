@@ -12,10 +12,12 @@ board = [
         ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
         ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
 ]
+board_copy = board.copy()
 en_passant=None
 check=None
 castleRights={"w": True, "b": True}
 game_status=None
+moves_sheet = open(f"./moves_sheet.txt", "a")
 
 # convert ACN to coords and vise versa
 def coords_convert(val: str | list, arrF=False):
@@ -402,7 +404,6 @@ def am_i_in_check(player: bool):
     """ returns True if player is in check else False """
     p_king = find_piece(player=player, piece="k", output_format=list)[0]
     protectors = get_protectors(protector=not player, cos=p_king)
-    print(protectors)
     total_attackers = sum(len(v) for v in protectors.values())
     return True if total_attackers > 0 else False
 
@@ -414,14 +415,6 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
         then shift the origin at src pt and you have the possible moves after that we filter the paths by manualy going thtough all the board squares.
     """
     moves = []
-
-    # if piece doesnt exist on src square then just stop this fn and send a 401
-    if  not src in find_piece(player=player, piece=piece, output_format=list):
-        return "bro really tried to play and illegal move, take this sucker (401)"
-
-    # if the piece is pinned then stop the fn and send 401
-    if src in get_pinned_peices(player=player).get(piece):
-        return "bro really tried to play and illegal move, take this sucker (401) - pinned piece"
 
     def rook_moves(player: bool):
         # acc to origin
@@ -625,6 +618,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
             if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
         ] 
         valid_moves = []
+        # blindly add squares then filter them later
         for pt in shiftedCoords:
             d = pull_board_square(pt).get("player")
             if d == player:
@@ -634,8 +628,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
             else:
                 valid_moves.append(pt)
         
-        # castling
-        # TODO: change castle rights after a normal king move
+        # castling        
         if castleRights.get("w" if player else "b"):
             # if both consective squares are protected or players own piece reside there
             if not [src[0] + 1, src[1]] in get_protectors(protector=not player, cos=[src[0] + 1, src[1]]).values() or pull_board_square([src[0] + 1, src[1]]).get("player") == player:
@@ -653,15 +646,17 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                     if dest == [src[0] + 2, src[1]]:
                         castleRights = {"w": False if player else True, "b": False if not player else True}
         
-        #rm castle rights if its just a normal move instead of castling before
-        pass
+        # rm castle rights if its just a normal move instead of castling before
+        with open("./moves_sheet.txt" , "r") as RMS: # RMS -> readable move sheet. (don't judge the variable name)
+            if f"{"w" if player else "b"} k" in RMS.read():
+                castleRights = {"w": False if player else True, "b": False if not player else True}
 
         # remove the squares where there are protection by enemy
         for valid_move in valid_moves:
             for cosp in get_protectors(protector=not player, cos=valid_move).values(): # cosp -> coords of square protectors
                 for coord in cosp:
                     try: valid_moves.remove(coord)
-                    except ValueError: continue
+                    except ValueError: continue # at this point i m violetting the program to genrate error on purpose. Also Man specifying the ErrorType is brutal.
 
         return valid_moves
     
@@ -682,7 +677,62 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
             case _:
                 raise ValueError("invalid piece type in piece_switcher fn")
 
+    # if piece doesnt exist on src square then just stop this fn and send a 401
+    if  not src in find_piece(player=player, piece=piece, output_format=list):
+        return "bro really tried to play and illegal move, take this sucker (401)"
+    # if the piece is pinned then stop the fn and send 401
+    if src in get_pinned_peices(player=player).get(piece):
+        return "bro really tried to play and illegal move, take this sucker (401) - pinned piece"
+
+    # check for check
+    if check == player:
+        p_king = find_piece(player=player, piece="k", output_format=list)[0]
+        protectors = get_protectors(protector=not player, cos=p_king)
+        total_attackers = sum(len(v) for v in protectors.values())
+        k_legal_moves = piece_switcher(player=player, piece="k") # get all possible moves of the player's king
+        
+        # checkmate condition
+        if len(k_legal_moves) == 0 and total_attackers > 0:
+            return f"{not player} checkmaated {player}!"
+        # covering check condition
+        if total_attackers == 1: # for good measure we could add `and piece != 'k'` here but its not neccessary because the piece will always be other than king if attackers == 1
+            if piece == "k":
+                return k_legal_moves # send the pre-calculated king moves rather than running piece_switcher fn again
+            if piece != "k":
+                tmp_board = board.copy() # backup the board
+                place_piece(player=player, piece=piece, src=src, dest=dest) # for tmp purposes
+                if am_i_in_check(player=player):
+                    return "bro really tried to play and illegal move, take this sucker (401) - covering check"
+                else: # the piece can cover the check
+                    board = tmp_board.copy() # restore the board
+                    del tmp_board # delete the backup
+                    # set the check var to None because the check has been covered
+                    check = None
+
+                    # slow method but it works
+                    # return piece_switcher(player=player, piece=piece) 
+                    # send the bruteforced move
+                    return [dest]
+        # double check condition
+        if total_attackers == 2:
+            if piece != "k":
+                return "bro really tried to play and illegal move, take this sucker (401) - double check"
+            else:
+                return k_legal_moves # send the pre-calculated king moves rather than running piece_switcher fn again
+
+    # get the possible moves
     moves = piece_switcher(player=player, piece=piece)
+
+    # setting the check var
+    if dest in moves: # only if legal move
+        tmp_board = board.copy() # backup the board
+        place_piece(player=player, piece=piece, src=src, dest=dest) # for tmp purposes
+        if am_i_in_check(player=not player): # when the player moves the piece then check was that check for (not player)
+            check = not player
+        else:
+            check = None
+    board = tmp_board.copy() # restore the board
+    del tmp_board # delete the backup
 
     return moves
 
@@ -706,5 +756,17 @@ def move(ACN: str):
     # move piece if dest in possible moves
     elif coords_convert(mData.get("dest")) in possible_moves:
         res = place_piece(player=mData.get("player"), piece=mData.get("piece"), src=coords_convert(mData.get("src")), dest=coords_convert(mData.get("dest")))
+        
+        # write move on sheet
+        moves_sheet.write(f"{ACN}\n")
+        
         if res == 200:
             return "piece moved successfully (200)"
+
+def reset_board():
+    """ resets the board to initial position """
+    global board, check, en_passant, castleRights
+    board = board_copy.copy()
+    check = None
+    en_passant = None
+    castleRights = {"w": True, "b": True}
