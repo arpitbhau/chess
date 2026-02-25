@@ -24,10 +24,11 @@ def handle_connect():
 
 @socketio.on('move_piece_socket')
 def handle_move_piece_socket(data):
-    print(f'Received from client: {data}')
+    # print(f'Received from client: {data}')
 
     ACN = f"{data['piece'][0]} {data['piece'][1]} {data['from']} {data['to']}"
-
+    print("builded ACN: ", ACN)
+    
     move_res = main_game.move(ACN)
     
     # Reply back to client
@@ -42,4 +43,4 @@ def handle_disconnect():
 
 # Start server
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=3000, debug=True)  # Disable reloader to prevent duplicate logs
+    socketio.run(app, host='0.0.0.0', port=3000, debug=True)

@@ -12,7 +12,7 @@ board = [
         ["b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p" , "b/p"] ,
         ["b/r" , "b/n" , "b/b" , "b/q" , "b/k" , "b/b" , "b/n" , "b/r"] 
 ]
-board_copy = board.copy()
+board_copy = [row.copy() for row in board] # fucking separate copy
 en_passant=None
 check=None
 castleRights={"w": True, "b": True}
@@ -216,7 +216,7 @@ def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by
         # draw line to !player's king and check slope of the line
         m = (b[1]-victim[1]) / (b[0]-victim[0])
         if m in [-1 , 1]: bishop_eq_check_between(b=b)
-    
+
     # 3. queen ......
     # queen = rook + bishop , so no fn needed this time sucker! 
     for q in find_piece(player=protector, piece="q", output_format=list):
@@ -227,7 +227,7 @@ def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by
             elif m in [1, -1]: bishop_eq_check_between(b=q, queen_bandage_to_fn=True) # bishop
         except ZeroDivisionError:
             rook_eq_check_between(r=q) # rook with 90deg angle
-    
+
     # 4. knight
     def kinght_squares(src):
         oCoords = [ [2,1] , [1,2] , [-1,2] , [-2,1] , [-2,-1] , [-1,-2] , [1,-2] , [2,-1] ]
@@ -266,7 +266,7 @@ def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by
     for p in find_piece(player=protector, piece='p', output_format=list):
         if cos in pawn_squares(src=p): # get the squares covering that specific pwn
             pawn_protectors.append(p) # add that pawn to the protectors
-    
+
     return {'r': rook_protectors,
             'n': knight_protectors,
             'b': bishop_protectors,
@@ -414,6 +414,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
         => first consider the piece is at origin (0,0) and hardcode the coords possible for the specific piece,
         then shift the origin at src pt and you have the possible moves after that we filter the paths by manualy going thtough all the board squares.
     """
+    global check, board, en_passant, castleRights
     moves = []
 
     def rook_moves(player: bool):
@@ -469,16 +470,16 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 (( 0,  1), "+y"),
                 (( 0, -1), "-y"),
             ]
-
-            all_moves = set()
+            all_moves = []
 
             for (dx, dy), d_str in shifts:
                 new_pt = [src[0] + dx, src[1] + dy]
                 new_direction = d_str
-                result = eval(filter_paths(coords, new_pt, new_direction))
-                all_moves |= set(result)
+                result = eval(f"[{filter_paths(coords, new_pt, new_direction)[:-2]}]") # remove the " , " from the end and add "[]" covering all the coords as an array. 
+                # ^^^ line --> if just give eval(filter_paths()), the filter_paths give "[1, 2] , [..] , .. [..] , " when we eval this python converts this to ([1,2] , [..] , ....) and this is actually crazy shit python does. in upper line i just made sure it forms a list with removing " , " at the end frpm string.
+                if result: all_moves += result
 
-            return list(all_moves)
+            return all_moves
         return finialize(shiftedCoords)
 
     def bishop_moves(player: bool):
@@ -522,7 +523,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                             new_pt = [pt[0] - 1 , pt[1] - 1]
                         case "-+":
                             new_pt = [pt[0] - 1 , pt[1] + 1]
-                        
+
                     return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
             else:
                 coords.remove(pt) # remove that coord so that reecursion goes smoothly
@@ -534,16 +535,17 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 (( 1, -1), "+-"),
                 ((-1,  1), "-+")
             ]
-
-            all_moves = set()
+            all_moves = []
 
             for (dx, dy), d_str in shifts:
                 new_pt = [src[0] + dx, src[1] + dy]
                 new_direction = d_str
-                result = eval(filter_paths(coords, new_pt, new_direction))
-                all_moves |= set(result)
+                result = eval(f"[{filter_paths(coords, new_pt, new_direction)[:-2]}]") # remove the " , " from the end and add "[]" covering all the coords as an array. 
+                # ^^^ line --> if just give eval(filter_paths()), the filter_paths give "[1, 2] , [..] , .. [..] , " when we eval this python converts this to ([1,2] , [..] , ....) and this is actually crazy shit python does. in upper line i just made sure it forms a list with removing " , " at the end frpm string.
+                if result: all_moves += result
 
-            return list(all_moves)
+            return all_moves
+
         return finialize(shiftedCoords)
 
     def queen_moves(player: bool):
@@ -568,6 +570,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
         return valid_moves
 
     def pawn_moves(player: bool):
+        global en_passant
         oCoords = [[-1,1] , [0,1] , [1,1]] if player else [[-1,-1], [0,-1] , [1,-1]] # had to do this because pawns can't walk backwards
         shiftedCoords = [
             [x + src[0], y + src[1]]
@@ -601,7 +604,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 en_passant = {'for': True, 'to_capture': src, 'go_to': [src[0], src[1]+1]}
 
         # en_passant (the illegal move noobs dont know about.)
-        if en_passant["for"] == player: # im a fucking genius. only real ones can understand this 'if' part
+        if en_passant and en_passant["for"] == player: # im a fucking genius. only real ones can understand this 'if' part and why the order of en_passant["for"] and en_passant is wrong.
             try:
                 valid_moves.append(en_passant.get("go_to"))
                 en_passant = None
@@ -610,13 +613,13 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
 
         return valid_moves
 
-    def king_moves(player: bool):
+    def king_moves(player: bool, castleRights=castleRights):
         oCoords = [[-1,1] , [0,1] , [1,1] , [1,0] , [1,-1] , [0,-1] , [-1,-1] , [-1,0]]
         shiftedCoords = [
             [x + src[0], y + src[1]]
             for x, y in oCoords
             if (x + src[0] <= 8 and y + src[1] <= 8 and x + src[0] >= 1 and y + src[1] >= 1) # 1<=x,y<=8
-        ] 
+        ]
         valid_moves = []
         # blindly add squares then filter them later
         for pt in shiftedCoords:
@@ -627,8 +630,8 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 valid_moves.append(pt)
             else:
                 valid_moves.append(pt)
-        
-        # castling        
+
+        # castling
         if castleRights.get("w" if player else "b"):
             # if both consective squares are protected or players own piece reside there
             if not [src[0] + 1, src[1]] in get_protectors(protector=not player, cos=[src[0] + 1, src[1]]).values() or pull_board_square([src[0] + 1, src[1]]).get("player") == player:
@@ -645,7 +648,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                     # upadate var
                     if dest == [src[0] + 2, src[1]]:
                         castleRights = {"w": False if player else True, "b": False if not player else True}
-        
+
         # rm castle rights if its just a normal move instead of castling before
         with open("./moves_sheet.txt" , "r") as RMS: # RMS -> readable move sheet. (don't judge the variable name)
             if f"{"w" if player else "b"} k" in RMS.read():
@@ -657,9 +660,8 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 for coord in cosp:
                     try: valid_moves.remove(coord)
                     except ValueError: continue # at this point i m violetting the program to genrate error on purpose. Also Man specifying the ErrorType is brutal.
-
         return valid_moves
-    
+
     def piece_switcher(player: bool, piece: str):
         match piece:
             case "r":
@@ -703,12 +705,12 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
             if piece == "k":
                 return k_legal_moves # send the pre-calculated king moves rather than running piece_switcher fn again
             if piece != "k":
-                tmp_board = board.copy() # backup the board
+                tmp_board = [row.copy() for row in board] # backup the board
                 place_piece(player=player, piece=piece, src=src, dest=dest) # for tmp purposes
                 if am_i_in_check(player=player):
                     return "bro really tried to play and illegal move, take this sucker (401) - covering check"
                 else: # the piece can cover the check
-                    board = tmp_board.copy() # restore the board
+                    board = [row.copy() for row in tmp_board] # restore the board
                     del tmp_board # delete the backup
                     # set the check var to None because the check has been covered
                     check = None
@@ -729,13 +731,13 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
 
     # setting the check var
     if dest in moves: # only if legal move
-        tmp_board = board.copy() # backup the board
+        tmp_board = [row.copy() for row in board] # backup the board
         place_piece(player=player, piece=piece, src=src, dest=dest) # for tmp purposes
         if am_i_in_check(player=not player): # when the player moves the piece then check was that check for (not player)
             check = not player
         else:
             check = None
-    board = tmp_board.copy() # restore the board
+    board = [row.copy() for row in tmp_board] # restore the board
     del tmp_board # delete the backup
 
     return moves
@@ -763,10 +765,13 @@ def move(ACN: str):
         
         # write move on sheet
         moves_sheet.write(f"{ACN}\n")
-        print(board)
+
         if res == 200:
             return {"message": "piece moved successfully.", "status": 200 }
+        else:
+            return {"message": "an error occured while moving the piece, try again later.", "status": 500 }
 
+# reset board
 def reset_board():
     """ resets the board to initial position """
     global board, check, en_passant, castleRights
@@ -774,5 +779,19 @@ def reset_board():
     check = None
     en_passant = None
     castleRights = {"w": True, "b": True}
+
+    # reset move sheet
+    with open(f"./moves_sheet.txt" , "w") as f:
+        f.write("")
+    # reset the var
+    moves_sheet = open(f"./moves_sheet.txt", "a")
+
+# pretty-print the board
+def pretty_board():
+    for row in reversed(board):
+        line = ""
+        for sq in row:
+            line += f"{sq} "
+        print(line)
 
 # yo!

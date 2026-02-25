@@ -47,7 +47,6 @@ const piece_drag_logic = () => {
                 
                 // Add piece to new square
                 if (sourceSquare !== targetSquare) {
-                    e.currentTarget.appendChild(draggedPiece);
                     // Emit move event to server to check if it's validate and update game state
                     socket.emit('move_piece_socket', {
                         piece: draggedPiece.dataset.piece,
@@ -56,10 +55,15 @@ const piece_drag_logic = () => {
                     });
                     // listen for server's reesponse
                     socket.on('move_piece_socket', (data) => {
-                        console.log('Server response:', data);
+                        // console.log('Server response for move_piece:', data);
+                        // add piece
+                        if (data.status == 200) {
+                            e.currentTarget.appendChild(draggedPiece);
+                            console.log(`Moved ${draggedPiece.dataset.piece} from ${sourceSquare} to ${targetSquare}`);
+                        } else if (data.status == 500) {
+                            console.log("Move failed:", data.message);
+                        }
                     });
-                    console.log(`Moved ${draggedPiece.dataset.piece} from ${sourceSquare} to ${targetSquare}`);
-                    
                 }
             }
             
@@ -69,5 +73,13 @@ const piece_drag_logic = () => {
     });
 }
 
-piece_drag_logic();
+// Flip board functionality
+const flip_board_logic = () => {
+    document.getElementById('flipBtn').addEventListener('click', () => {
+        const boardContainer = document.getElementById('boardContainer');
+        boardContainer.classList.toggle('flipped');
+    });
+}
 
+piece_drag_logic();
+flip_board_logic();
