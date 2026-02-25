@@ -9,4 +9,4 @@ while True:
         main_game.reset_board()
     else:
         res = main_game.move(move_str)
-        print(res.get("status"))
+        print(res)

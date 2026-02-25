@@ -18,6 +18,7 @@ check=None
 castleRights={"w": True, "b": True}
 game_status=None
 moves_sheet = open(f"./moves_sheet.txt", "a")
+tmp_board = [row.copy() for row in board] # backup the board
 
 # convert ACN to coords and vise versa
 def coords_convert(val: str | list, arrF=False):
@@ -214,8 +215,9 @@ def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by
             queen_protectors.append(protecting_guy) if queen_bandage_to_fn else bishop_protectors.append(protecting_guy)
     for b in find_piece(player=protector, piece="b", output_format=list):
         # draw line to !player's king and check slope of the line
-        m = (b[1]-victim[1]) / (b[0]-victim[0])
-        if m in [-1 , 1]: bishop_eq_check_between(b=b)
+        if not b[0] - victim[0] == 0: # 90deg or 270deg causes ZeroDivisionError aka denominator != 0 at all costs to avoid ZeroDivisionError
+            m = (b[1]-victim[1]) / (b[0]-victim[0])
+            if m in [-1 , 1]: bishop_eq_check_between(b=b)
 
     # 3. queen ......
     # queen = rook + bishop , so no fn needed this time sucker! 
@@ -226,7 +228,7 @@ def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by
             if m == 0: rook_eq_check_between(r=q, queen_bandage_to_fn=True) # rook
             elif m in [1, -1]: bishop_eq_check_between(b=q, queen_bandage_to_fn=True) # bishop
         except ZeroDivisionError:
-            rook_eq_check_between(r=q) # rook with 90deg angle
+            rook_eq_check_between(r=q) # rook with 90deg or 270deg angle
 
     # 4. knight
     def kinght_squares(src):
@@ -373,8 +375,9 @@ def get_pinned_peices(player: bool):
     # 2. bishop ......
     for b in find_piece(player=not player, piece="b", output_format=list):
         # draw line to !player's king and check slope of the line
-        m = (b[1]-p_king[1]) / (b[0]-p_king[0])
-        if m in [-1 , 1]: bishop_eq_check_between(b=b)
+        if not b[0] - p_king[0] == 0: # denominator != 0 at all costs
+            m = (b[1]-p_king[1]) / (b[0]-p_king[0])
+            if m in [-1 , 1]: bishop_eq_check_between(b=b)
     
     # 3. queen ......
     for q in find_piece(player=not player, piece="q", output_format=list):
@@ -414,7 +417,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
         => first consider the piece is at origin (0,0) and hardcode the coords possible for the specific piece,
         then shift the origin at src pt and you have the possible moves after that we filter the paths by manualy going thtough all the board squares.
     """
-    global check, board, en_passant, castleRights
+    global check, board, en_passant, castleRights, tmp_board # to stop UnboundLocalError shit. i also have to specify this inside sub-fns too which makes it look more shitty.
     moves = []
 
     def rook_moves(player: bool):
@@ -441,25 +444,26 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 return ""
             elif pt in coords:
                 d = pull_board_square(pt).get("player")
-                if d == player:
-                    return ""
-                elif d ==  (not player):
-                    # moves.append(pt)
-                    return f"{pt}"
-                else:
-                    coords.remove(pt)
-                    new_pt = None
-                    # new pt logic
-                    match direction:
-                        case "+x":
-                            new_pt = [pt[0] + 1 , pt[1]]
-                        case "-x":
-                            new_pt = [pt[0] - 1 , pt[1]]
-                        case "+y":
-                            new_pt = [pt[0] , pt[1] + 1]
-                        case "-y":
-                            new_pt = [pt[0] , pt[1] - 1]
-                    return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
+                match d:
+                    case player:
+                        return ""
+                    case None:
+                        coords.remove(pt)
+                        new_pt = None
+                        # new pt logic
+                        match direction:
+                            case "+x":
+                                new_pt = [pt[0] + 1 , pt[1]]
+                            case "-x":
+                                new_pt = [pt[0] - 1 , pt[1]]
+                            case "+y":
+                                new_pt = [pt[0] , pt[1] + 1]
+                            case "-y":
+                                new_pt = [pt[0] , pt[1] - 1]
+                        return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
+                    case (not player):
+                        # moves.append(pt)
+                        return f"{pt}"
             else:
                 coords.remove(pt) # remove that coord so that reecursion goes smoothly
 
@@ -504,27 +508,28 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 return ""
             elif pt in coords:
                 d = pull_board_square(pt).get("player")
-                if d == player:
-                    coords.remove(pt)
-                    return ""
-                elif d ==  (not player):
-                    # moves.append(pt)
-                    return f"{pt}"
-                else:
-                    coords.remove(pt)
-                    new_pt = None
-                    # new pt logic
-                    match direction:
-                        case "++":
-                            new_pt = [pt[0] + 1 , pt[1] + 1]
-                        case "+-":
-                            new_pt = [pt[0] + 1 , pt[1] - 1]
-                        case "--":
-                            new_pt = [pt[0] - 1 , pt[1] - 1]
-                        case "-+":
-                            new_pt = [pt[0] - 1 , pt[1] + 1]
+                match d:
+                    case player:
+                        coords.remove(pt)
+                        return ""
+                    case None:
+                        coords.remove(pt)
+                        new_pt = None
+                        # new pt logic
+                        match direction:
+                            case "++":
+                                new_pt = [pt[0] + 1 , pt[1] + 1]
+                            case "+-":
+                                new_pt = [pt[0] + 1 , pt[1] - 1]
+                            case "--":
+                                new_pt = [pt[0] - 1 , pt[1] - 1]
+                            case "-+":
+                                new_pt = [pt[0] - 1 , pt[1] + 1]
 
-                    return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
+                        return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
+                    case (not player): # not None -> True but as we coverd d == None above so the only case which remains is (not player)
+                        # moves.append(pt)
+                        return f"{pt}"
             else:
                 coords.remove(pt) # remove that coord so that reecursion goes smoothly
 
@@ -613,7 +618,8 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
 
         return valid_moves
 
-    def king_moves(player: bool, castleRights=castleRights):
+    def king_moves(player: bool):
+        global castleRights # to stop UnboundLocalError shit!
         oCoords = [[-1,1] , [0,1] , [1,1] , [1,0] , [1,-1] , [0,-1] , [-1,-1] , [-1,0]]
         shiftedCoords = [
             [x + src[0], y + src[1]]
@@ -638,20 +644,24 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 if not [src[0] + 2, src[1]] in get_protectors(protector=not player, cos=[src[0] + 2, src[1]]).values() or pull_board_square([src[0] + 2, src[1]]).get("player") == player:
                     # add that castling square sucker
                     valid_moves.append([src[0] + 2, src[1]])
-                    # upadate var
+                    # update var and rook position and dont change king positon cause king position will change in `move()`
                     if dest == [src[0] + 2, src[1]]:
                         castleRights = {"w": False if player else True, "b": False if not player else True}
+                        place_piece(player=player, piece="r" , src=[8, src[1]], dest=[src[0] + 1, src[1]])  # castling on a normal board. what i mean is this is not correct for freestyle chess
+
             if not [src[0] - 1, src[1]] in get_protectors(protector=not player, cos=[src[0] - 1, src[1]]).values() or pull_board_square([src[0] - 1, src[1]]).get("player") == player:
                 if not [src[0] + 2, src[1]] in get_protectors(protector=not player, cos=[src[0] - 2, src[1]]).values() or pull_board_square([src[0] - 2, src[1]]).get("player") == player:
                     # add that castling square sucker
                     valid_moves.append([src[0] - 2, src[1]])
-                    # upadate var
+                    # update var and rook position and dont change king positon cause king position will change in `move()`
                     if dest == [src[0] + 2, src[1]]:
                         castleRights = {"w": False if player else True, "b": False if not player else True}
+                        place_piece(player=player, piece="r" , src=[1, src[1]], dest=[src[0] - 1, src[1]])  # castling on a normal board. what i mean is this is not correct for freestyle chess
 
-        # rm castle rights if its just a normal move instead of castling before
+        # rm castle rights if its just a normal move of rook or king instead of castling before
         with open("./moves_sheet.txt" , "r") as RMS: # RMS -> readable move sheet. (don't judge the variable name)
-            if f"{"w" if player else "b"} k" in RMS.read():
+            RMS_content = RMS.read()
+            if f"{'w' if player else 'b'} k" in RMS_content or f"{'w' if player else 'b'} r" in RMS_content:
                 castleRights = {"w": False if player else True, "b": False if not player else True}
 
         # remove the squares where there are protection by enemy
@@ -696,7 +706,7 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
         protectors = get_protectors(protector=not player, cos=p_king)
         total_attackers = sum(len(v) for v in protectors.values())
         k_legal_moves = piece_switcher(player=player, piece="k") # get all possible moves of the player's king
-        
+
         # checkmate condition
         if len(k_legal_moves) == 0 and total_attackers > 0:
             return f"{not player} checkmaated {player}!"
@@ -738,7 +748,6 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
         else:
             check = None
     board = [row.copy() for row in tmp_board] # restore the board
-    del tmp_board # delete the backup
 
     return moves
 
