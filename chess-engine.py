@@ -16,7 +16,6 @@ board_copy = [row.copy() for row in board] # fucking separate copy
 en_passant=None
 check=None
 castleRights={"w": True, "b": True}
-game_status=None
 moves_sheet = open(f"./moves_sheet.txt", "a")
 tmp_board = [row.copy() for row in board] # backup the board
 
@@ -94,12 +93,19 @@ def find_piece(player:bool, piece:str, output_format: type):
         for x_coord,r_sq in enumerate(rank): # r_sq means raw_sq in form of b/r
             if r_sq == f"{player}/{piece}":
                 locations.append([x_coord+1, y_coord+1]) # +1 because the coords were accordig to array indexing i.e 0,0 is origin 
-    return locations if output_format == list else [coords_convert(*coord) for coord in locations] # fucking insane!
+    return locations if output_format == list else [coords_convert(coord) for coord in locations] # fucking insane!
 
 # get protectors of a piece
 def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by_myself
     """ give 'coords of square(cos)' of whose protectors are to be found and the guy who u want to see protecting(i mean white or black, mochiron True or False).
-    returns {'player': player, 'pieces': [{'piece': 'example_piece', coords: [example_coords]}, ....]}
+    returns {'r': rook_protectors,
+            'n': knight_protectors,
+            'b': bishop_protectors,
+            'q': queen_protectors,
+            'k': king_protectors,
+            'p': pawn_protectors
+        }
+
     if no pieces returns 'None'
     """
     # logic: kinda similiar algo to pinned piece algo
@@ -275,7 +281,7 @@ def get_protectors(protector: bool, cos: list): # really, cos? come on dude - by
             'q': queen_protectors,
             'k': king_protectors,
             'p': pawn_protectors
-        }
+        } if rook_protectors or king_protectors or bishop_protectors or queen_protectors or king_protectors or pawn_protectors else None
 
 # pinned peice logic
 def get_pinned_peices(player: bool):
@@ -444,26 +450,25 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 return ""
             elif pt in coords:
                 d = pull_board_square(pt).get("player")
-                match d:
-                    case player:
-                        return ""
-                    case None:
-                        coords.remove(pt)
-                        new_pt = None
-                        # new pt logic
-                        match direction:
-                            case "+x":
-                                new_pt = [pt[0] + 1 , pt[1]]
-                            case "-x":
-                                new_pt = [pt[0] - 1 , pt[1]]
-                            case "+y":
-                                new_pt = [pt[0] , pt[1] + 1]
-                            case "-y":
-                                new_pt = [pt[0] , pt[1] - 1]
-                        return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
-                    case (not player):
-                        # moves.append(pt)
-                        return f"{pt}"
+                if d == player:
+                    return ""
+                elif d == None:
+                    coords.remove(pt)
+                    new_pt = None
+                    # new pt logic
+                    match direction:
+                        case "+x":
+                            new_pt = [pt[0] + 1 , pt[1]]
+                        case "-x":
+                            new_pt = [pt[0] - 1 , pt[1]]
+                        case "+y":
+                            new_pt = [pt[0] , pt[1] + 1]
+                        case "-y":
+                            new_pt = [pt[0] , pt[1] - 1]
+                    return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
+                elif d == (not player):
+                    # moves.append(pt)
+                    return f"{pt}"
             else:
                 coords.remove(pt) # remove that coord so that reecursion goes smoothly
 
@@ -508,28 +513,27 @@ def pull_possible_moves(player: bool, piece: str, src: list, dest: list):
                 return ""
             elif pt in coords:
                 d = pull_board_square(pt).get("player")
-                match d:
-                    case player:
-                        coords.remove(pt)
-                        return ""
-                    case None:
-                        coords.remove(pt)
-                        new_pt = None
-                        # new pt logic
-                        match direction:
-                            case "++":
-                                new_pt = [pt[0] + 1 , pt[1] + 1]
-                            case "+-":
-                                new_pt = [pt[0] + 1 , pt[1] - 1]
-                            case "--":
-                                new_pt = [pt[0] - 1 , pt[1] - 1]
-                            case "-+":
-                                new_pt = [pt[0] - 1 , pt[1] + 1]
+                if d == player:
+                    coords.remove(pt)
+                    return ""
+                elif d == None:
+                    coords.remove(pt)
+                    new_pt = None
+                    # new pt logic
+                    match direction:
+                        case "++":
+                            new_pt = [pt[0] + 1 , pt[1] + 1]
+                        case "+-":
+                            new_pt = [pt[0] + 1 , pt[1] - 1]
+                        case "--":
+                            new_pt = [pt[0] - 1 , pt[1] - 1]
+                        case "-+":
+                            new_pt = [pt[0] - 1 , pt[1] + 1]
 
-                        return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
-                    case (not player): # not None -> True but as we coverd d == None above so the only case which remains is (not player)
-                        # moves.append(pt)
-                        return f"{pt}"
+                    return f"{pt} , {filter_paths(coords , pt=new_pt , direction=direction)}"
+                elif d == (not player): # not None -> True but as we coverd d == None above so the only case which remains is (not player)
+                    # moves.append(pt)
+                    return f"{pt}"
             else:
                 coords.remove(pt) # remove that coord so that reecursion goes smoothly
 
@@ -803,4 +807,4 @@ def pretty_board():
             line += f"{sq} "
         print(line)
 
-# yo!
+# it's finally done after 8.5 months of sleepless nights.

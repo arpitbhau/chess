@@ -1,6 +1,4 @@
 .vscode
-test_venv/
-node_modules/
 .venv/
 __pycache__/
 *.pyc
